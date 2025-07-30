@@ -244,14 +244,14 @@
 
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
     const rawData = [
-      {"QueueID":"6850D62E-17F9-6B42-9615-E1C94A20A34E","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6910","QueueDate":"2/15/2023 11:48:53 AM","DueDate":"2023-03-01","ParentUnit":"ICU"},
-      {"QueueID":"562D8F5F-1463-6644-BF8A-2AA32ED058D4","AssignedTo":"Lisa Mangubat","Status":"Paid and Posted","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6919","QueueDate":"2/15/2023 11:53:34 AM","DueDate":"2023-03-05","ParentUnit":"Surgery"},
-      {"QueueID":"4B9525BB-450E-574F-8291-BCF3BE681FF1","AssignedTo":"Johann Castaneda","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"Northern California Physicians","Patient":"Bro_6929","QueueDate":"3/2/2023 1:14:15 PM","DueDate":"2023-03-10","ParentUnit":"Cardiology"},
-      {"QueueID":"134283C5-7A1B-9344-80CA-6A30B44FDE15","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"High","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Roa_6931","QueueDate":"6/14/2023 12:00:12 PM","DueDate":"2023-06-20","ParentUnit":"Neurology"},
-      {"QueueID":"7C0BB95A-9217-704B-BCBE-D634E93EC14D","AssignedTo":"Lisa Mangubat","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6930","QueueDate":"6/14/2023 11:43:21 AM","DueDate":"2023-06-18","ParentUnit":"Orthopedics"},
-      {"QueueID":"B5083533-62C4-E246-8B55-29F3D3C71047","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6933","QueueDate":"6/14/2023 12:24:44 PM","DueDate":"2023-06-25","ParentUnit":"Pediatrics"},
-      {"QueueID":"E771CB51-E00E-EF4E-BE95-0E2ED1B4D6E4","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6917","QueueDate":"11/22/2021 - 11/26/2021","DueDate":"2021-11-30","ParentUnit":"Emergency"},
-      {"QueueID":"1C2993B8-ACEE-2846-84AE-0F30D838BD49","AssignedTo":"Lisa Mangubat","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"Medicare PPS","Patient":"Has_7010","QueueDate":"9/22/2023 4:13:24 PM","DueDate":"2023-10-01","ParentUnit":"Geriatrics"}
+      {"QueueID":"6850D62E-17F9-6B42-9615-E1C94A20A34E","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6910","QueueDate":"2/15/2023 11:48:53 AM","DueDate":"2023-03-01","Parent Unit":"ICU"},
+      {"QueueID":"562D8F5F-1463-6644-BF8A-2AA32ED058D4","AssignedTo":"Lisa Mangubat","Status":"Paid and Posted","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6919","QueueDate":"2/15/2023 11:53:34 AM","DueDate":"2023-03-05","Parent Unit":"Surgery"},
+      {"QueueID":"4B9525BB-450E-574F-8291-BCF3BE681FF1","AssignedTo":"Johann Castaneda","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"Northern California Physicians","Patient":"Bro_6929","QueueDate":"3/2/2023 1:14:15 PM","DueDate":"2023-03-10","Parent Unit":"Cardiology"},
+      {"QueueID":"134283C5-7A1B-9344-80CA-6A30B44FDE15","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"High","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Roa_6931","QueueDate":"6/14/2023 12:00:12 PM","DueDate":"2023-06-20","Parent Unit":"Neurology"},
+      {"QueueID":"7C0BB95A-9217-704B-BCBE-D634E93EC14D","AssignedTo":"Lisa Mangubat","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6930","QueueDate":"6/14/2023 11:43:21 AM","DueDate":"2023-06-18","Parent Unit":"Orthopedics"},
+      {"QueueID":"B5083533-62C4-E246-8B55-29F3D3C71047","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6933","QueueDate":"6/14/2023 12:24:44 PM","DueDate":"2023-06-25","Parent Unit":"Pediatrics"},
+      {"QueueID":"E771CB51-E00E-EF4E-BE95-0E2ED1B4D6E4","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6917","QueueDate":"11/22/2021 - 11/26/2021","DueDate":"2021-11-30","Parent Unit":"Emergency"},
+      {"QueueID":"1C2993B8-ACEE-2846-84AE-0F30D838BD49","AssignedTo":"Lisa Mangubat","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"Medicare PPS","Patient":"Has_7010","QueueDate":"9/22/2023 4:13:24 PM","DueDate":"2023-10-01","Parent Unit":"Geriatrics"}
     ];
     let currentFilter = {};
 
@@ -337,7 +337,7 @@
     function parentUnitData(data) {
       let count = {};
       data.forEach(d => {
-        let key = d.ParentUnit ? d.ParentUnit : '(Unknown)';
+        let key = d["Parent Unit"] ? d["Parent Unit"] : '(Unknown)';
         count[key] = (count[key] || 0) + 1;
       });
       return {
@@ -420,7 +420,7 @@
           <td>${d.Patient || ""}</td>
           <td>${d.QueueDate || ""}</td>
           <td>${d.DueDate || ""}</td>
-          <td>${d.ParentUnit || ""}</td>
+          <td>${d["Parent Unit"] || ""}</td>
         </tr>`;
       });
       $("#tableBody").html(rows);
