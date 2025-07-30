@@ -350,7 +350,7 @@
     function parentUnitData(data) {
       let count = {};
       data.forEach(d => {
-        let key = d.ParentUnit ? d.ParentUnit : '(Unknown)';
+        let key = d["Parent Unit"]  ? d["Parent Unit"]  : '(Unknown)';
         count[key] = (count[key] || 0) + 1;
       });
       return {
