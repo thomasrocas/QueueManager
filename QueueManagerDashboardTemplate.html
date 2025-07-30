@@ -227,26 +227,7 @@
       {"QueueID":"E771CB51-E00E-EF4E-BE95-0E2ED1B4D6E4","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6917","QueueDate":"11/22/2021 - 11/26/2021"},
       {"QueueID":"1C2993B8-ACEE-2846-84AE-0F30D838BD49","AssignedTo":"Lisa Mangubat","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"Medicare PPS","Patient":"Has_7010","QueueDate":"9/22/2023 4:13:24 PM"}
     ];
-    // Load persisted selections for highlights
-    let selections = JSON.parse(localStorage.getItem('chartSelections') || '{}');
-    const baseDataStore = {};
-
-    function saveSelections() {
-      localStorage.setItem('chartSelections', JSON.stringify(selections));
-    }
-
-    function toggleSelection(field, label) {
-      if(!selections[field]) selections[field] = [];
-      const idx = selections[field].indexOf(label);
-      if(idx >= 0) {
-        selections[field].splice(idx, 1);
-        if(selections[field].length === 0) delete selections[field];
-      } else {
-        selections[field].push(label);
-      }
-      saveSelections();
-      filterCharts();
-    }
+    let currentFilter = {};
 
     function assignedToData(data) {
       let count = {};
@@ -309,51 +290,30 @@
     }
     function filterData() {
       let data = rawData;
-      Object.entries(selections).forEach(([field, values]) => {
-        if(Array.isArray(values) && values.length) {
-          data = data.filter(d => {
-            const val = d[field] ? d[field] : "";
-            return values.includes(val);
-          });
+      Object.entries(currentFilter).forEach(([field, value]) => {
+        if(value !== null) {
+          data = data.filter(d => (d[field] ? d[field] : (field === "AssignedTo" ? "" : (field === "Status" ? "" : (field === "Priority" ? "" : "")))) === value);
         }
       });
       return data;
     }
-
-    function applyBarColors(chart, field) {
-      const baseColor = 'rgba(0, 123, 255, 0.6)';
-      chart.data.datasets[0].backgroundColor = chart.data.labels.map(lbl =>
-        selections[field] && selections[field].includes(lbl) ? 'rgba(0,123,255,0.9)' : baseColor
-      );
-    }
-
-    function filterCharts() {
+    function updateAllCharts() {
       let data = filterData();
       let aData = assignedToData(data);
-      baseDataStore['AssignedTo'] = baseDataStore['AssignedTo'] || assignedToData(rawData);
-      assignedToChart.data.labels = baseDataStore['AssignedTo'].labels;
-      assignedToChart.data.datasets[0].data = baseDataStore['AssignedTo'].values;
-      assignedToChart.data.datasets[1].data = aData.values;
-      applyBarColors(assignedToChart, 'AssignedTo');
+      assignedToChart.data.labels = aData.labels;
+      assignedToChart.data.datasets[0].data = aData.values;
       assignedToChart.update();
       let sData = statusData(data);
-      baseDataStore['Status'] = baseDataStore['Status'] || statusData(rawData);
-      statusChart.data.labels = baseDataStore['Status'].labels;
-      statusChart.data.datasets[0].data = baseDataStore['Status'].values;
-      statusChart.data.datasets[1].data = sData.values;
+      statusChart.data.labels = sData.labels;
+      statusChart.data.datasets[0].data = sData.values;
       statusChart.update();
       let pData = priorityData(data);
-      baseDataStore['Priority'] = baseDataStore['Priority'] || priorityData(rawData);
-      priorityChart.data.labels = baseDataStore['Priority'].labels;
-      priorityChart.data.datasets[0].data = baseDataStore['Priority'].values;
-      priorityChart.data.datasets[1].data = pData.values;
-      applyBarColors(priorityChart, 'Priority');
+      priorityChart.data.labels = pData.labels;
+      priorityChart.data.datasets[0].data = pData.values;
       priorityChart.update();
       let payData = payorData(data);
-      baseDataStore['Payor Name'] = baseDataStore['Payor Name'] || payorData(rawData);
-      payorChart.data.labels = baseDataStore['Payor Name'].labels;
-      payorChart.data.datasets[0].data = baseDataStore['Payor Name'].values;
-      payorChart.data.datasets[1].data = payData.values;
+      payorChart.data.labels = payData.labels;
+      payorChart.data.datasets[0].data = payData.values;
       payorChart.update();
       renderTable(data);
     }
@@ -365,25 +325,21 @@
         type: 'bar',
         data: {
           labels: aData.labels,
-          datasets: [
-            {
-              label: '# Claims',
-              data: aData.values,
-              backgroundColor: aData.labels.map(() => 'rgba(0, 123, 255, 0.6)')
-            },
-            {
-              label: 'Selected',
-              data: aData.labels.map(() => 0),
-              backgroundColor: 'rgba(255,99,132,0.6)'
-            }
-          ]
+          datasets: [{
+            label: '# Claims',
+            data: aData.values,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)'
+          }]
         },
         options: {
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              toggleSelection('AssignedTo', label);
+              currentFilter = { AssignedTo: label === "(Unassigned)" ? "" : label };
+            } else {
+              currentFilter = {};
             }
+            updateAllCharts();
           },
           plugins: {
             legend: { display: false }
@@ -398,27 +354,23 @@
         type: 'doughnut',
         data: {
           labels: sData.labels,
-          datasets: [
-            {
-              label: '# Claims',
-              data: sData.values,
-              backgroundColor: [
-                '#0d6efd', '#6c757d', '#198754', '#ffc107', '#dc3545', '#adb5bd'
-              ]
-            },
-            {
-              label: 'Selected',
-              data: sData.labels.map(() => 0),
-              backgroundColor: 'rgba(255,99,132,0.6)'
-            }
-          ]
+          datasets: [{
+            label: '# Claims',
+            data: sData.values,
+            backgroundColor: [
+              '#0d6efd', '#6c757d', '#198754', '#ffc107', '#dc3545', '#adb5bd'
+            ]
+          }]
         },
         options: {
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              toggleSelection('Status', label);
+              currentFilter = { Status: label === "(No Status)" ? "" : label };
+            } else {
+              currentFilter = {};
             }
+            updateAllCharts();
           },
           plugins: { legend: { position: 'bottom' } },
           cutout: "65%"
@@ -430,25 +382,21 @@
         type: 'bar',
         data: {
           labels: pData.labels,
-          datasets: [
-            {
-              label: '# Claims',
-              data: pData.values,
-              backgroundColor: pData.labels.map(() => 'rgba(253, 126, 20, 0.7)')
-            },
-            {
-              label: 'Selected',
-              data: pData.labels.map(() => 0),
-              backgroundColor: 'rgba(255,99,132,0.6)'
-            }
-          ]
+          datasets: [{
+            label: '# Claims',
+            data: pData.values,
+            backgroundColor: 'rgba(253, 126, 20, 0.7)'
+          }]
         },
         options: {
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              toggleSelection('Priority', label);
+              currentFilter = { Priority: label === "(None)" ? "" : label };
+            } else {
+              currentFilter = {};
             }
+            updateAllCharts();
           },
           plugins: {
             legend: { display: false }
@@ -463,33 +411,29 @@
         type: 'pie',
         data: {
           labels: payData.labels,
-          datasets: [
-            {
-              label: '# Claims',
-              data: payData.values,
-              backgroundColor: [
-                '#007bff','#6610f2','#6f42c1','#d63384','#fd7e14','#ffc107','#28a745','#20c997'
-              ]
-            },
-            {
-              label: 'Selected',
-              data: payData.labels.map(() => 0),
-              backgroundColor: 'rgba(255,99,132,0.6)'
-            }
-          ]
+          datasets: [{
+            label: '# Claims',
+            data: payData.values,
+            backgroundColor: [
+              '#007bff','#6610f2','#6f42c1','#d63384','#fd7e14','#ffc107','#28a745','#20c997'
+            ]
+          }]
         },
         options: {
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              toggleSelection('Payor Name', label);
+              currentFilter = { "Payor Name": label === "(Unknown)" ? "" : label };
+            } else {
+              currentFilter = {};
             }
+            updateAllCharts();
           },
           plugins: { legend: { position: 'bottom' } }
         }
       });
 
-      filterCharts();
+      renderTable(rawData);
     });
   </script>
 </body>
