@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RCM Dashboard Chart.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; }
+    .sidebar {
+      width: 137px;
+      background: #f4f4f4;
+      padding: 10px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    .sidebar.collapsed { width: 44px; }
+    .toggle-arrow {
+      position: absolute;
+      top: 15px;
+      right: -10px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .sidebar h3 { font-size: 16px; margin-bottom: 20px; }
+    .sidebar.collapsed h3,
+    .sidebar.collapsed .menu-text { display: none; }
+    .menu-item { display: flex; align-items: center; padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 5px; }
+    .menu-item:hover,
+    .menu-item.active { background-color: #dceeff; }
+    .menu-item i { margin-right: 10px; }
+    .main-content {
+      flex: 1;
+      padding: 24px 36px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    #dashboard {
+      max-width: 1350px;
+      margin: 0 auto;
+    }
+    .dashboard-title {
+      font-size: 2.1em;
+      font-weight: bold;
+      margin-bottom: 24px;
+      color: #0066bb;
+      letter-spacing: 0.01em;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      margin-bottom: 36px;
+    }
+    .chart-card {
+      background: #f9fbfc;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      padding: 24px 20px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 320px;
+    }
+    .chart-title {
+      font-size: 1.12em;
+      font-weight: bold;
+      color: #34495e;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+      text-align: center;
+    }
+    #data-table {
+      margin-top: 18px;
+      border-radius: 14px;
+      overflow-x: auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      background: #f9fbfc;
+      padding: 18px;
+    }
+    #data-table table {
+      border-collapse: collapse;
+      width: 100%;
+      background: transparent;
+      font-size: 0.98em;
+    }
+    #data-table th, #data-table td {
+      border: 1px solid #e4e4e4;
+      padding: 8px 14px;
+      text-align: left;
+    }
+    #data-table th {
+      background: #f0f5fa;
+      font-weight: 700;
+    }
+    #data-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .filter-label {
+      font-size: 1em;
+      margin-bottom: 4px;
+      color: #007bff;
+      font-weight: 500;
+    }
+    .right-panel-toggle {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      width: 30px;
+      height: 60px;
+      background-color: white;
+      color: #007bff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      z-index: 999;
+    }
+    .right-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 200px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      transition: right 0.3s ease;
+      z-index: 998;
+      padding: 20px;
+    }
+    .right-panel.open { right: 0; }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .main-content { padding: 16px; }
+      .right-panel { width: 98vw; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <button class="toggle-arrow" onclick="toggleSidebar()">‹</button>
+    <h3>RCM System</h3>
+    <!-- Optional: Add sidebar menu items here -->
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div id="dashboard">
+      <div class="dashboard-title">RCM Queue Dashboard</div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Assigned To Distribution</div>
+          <canvas id="assignedToChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Status Breakdown</div>
+          <canvas id="statusChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Priority Trend</div>
+          <canvas id="priorityChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Claims by Payor</div>
+          <canvas id="payorChart"></canvas>
+        </div>
+      </div>
+      <div id="data-table">
+        <div class="filter-label">Details Table (Filtered):</div>
+        <table>
+          <thead>
+            <tr>
+              <th>QueueID</th>
+              <th>AssignedTo</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Payor Name</th>
+              <th>Patient</th>
+              <th>QueueDate</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Sidebar Toggle Button -->
+  <div class="right-panel-toggle" onclick="toggleRightPanel()">❯</div>
+  <!-- Right Sidebar Panel -->
+  <div class="right-panel" id="rightPanel">
+    <h2>Right Panel</h2>
+    <p>
+      This right panel matches your SettingsTemplate.<br>
+      You can place any content here (settings, logs, etc).<br>
+      Edit the <code>#rightPanel</code> div as needed!
+    </p>
+  </div>
+
+  <script>
+    // Left sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+    // Right panel toggle
+    function toggleRightPanel() {
+      const panel = document.getElementById('rightPanel');
+      panel.classList.toggle('open');
+    }
+
+    // ---- SAMPLE DATA (Replace with your actual JSON!) ----
+    const rawData = [
+      {"QueueID":"6850D62E-17F9-6B42-9615-E1C94A20A34E","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6910","QueueDate":"2/15/2023 11:48:53 AM"},
+      {"QueueID":"562D8F5F-1463-6644-BF8A-2AA32ED058D4","AssignedTo":"Lisa Mangubat","Status":"Paid and Posted","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6919","QueueDate":"2/15/2023 11:53:34 AM"},
+      {"QueueID":"4B9525BB-450E-574F-8291-BCF3BE681FF1","AssignedTo":"Johann Castaneda","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"Northern California Physicians","Patient":"Bro_6929","QueueDate":"3/2/2023 1:14:15 PM"},
+      {"QueueID":"134283C5-7A1B-9344-80CA-6A30B44FDE15","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"High","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Roa_6931","QueueDate":"6/14/2023 12:00:12 PM"},
+      {"QueueID":"7C0BB95A-9217-704B-BCBE-D634E93EC14D","AssignedTo":"Lisa Mangubat","Status":"Recommended Write-Off","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6930","QueueDate":"6/14/2023 11:43:21 AM"},
+      {"QueueID":"B5083533-62C4-E246-8B55-29F3D3C71047","AssignedTo":"Karen Torres","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"BTMG Health Net Seniority Plus","Patient":"Ton_6933","QueueDate":"6/14/2023 12:24:44 PM"},
+      {"QueueID":"E771CB51-E00E-EF4E-BE95-0E2ED1B4D6E4","AssignedTo":"","Status":"","Priority":"","Payor Name":"Self Pay/Private Pay Monthly","Patient":"Nas_6917","QueueDate":"11/22/2021 - 11/26/2021"},
+      {"QueueID":"1C2993B8-ACEE-2846-84AE-0F30D838BD49","AssignedTo":"Lisa Mangubat","Status":"Waiting on Agency response","Priority":"Low","Payor Name":"Medicare PPS","Patient":"Has_7010","QueueDate":"9/22/2023 4:13:24 PM"}
+    ];
+    let currentFilter = {};
+
+    function assignedToData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.AssignedTo ? d.AssignedTo : '(Unassigned)';
+        count[key] = (count[key]||0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function statusData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.Status ? d.Status : '(No Status)';
+        count[key] = (count[key]||0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function priorityData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.Priority ? d.Priority : '(None)';
+        count[key] = (count[key]||0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function payorData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d["Payor Name"] ? d["Payor Name"] : '(Unknown)';
+        count[key] = (count[key]||0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function renderTable(data) {
+      let rows = "";
+      data.forEach(d => {
+        rows += `<tr>
+          <td>${d.QueueID}</td>
+          <td>${d.AssignedTo || ""}</td>
+          <td>${d.Status || ""}</td>
+          <td>${d.Priority || ""}</td>
+          <td>${d["Payor Name"] || ""}</td>
+          <td>${d.Patient || ""}</td>
+          <td>${d.QueueDate || ""}</td>
+        </tr>`;
+      });
+      $("#tableBody").html(rows);
+    }
+    function filterData() {
+      let data = rawData;
+      Object.entries(currentFilter).forEach(([field, value]) => {
+        if(value !== null) {
+          data = data.filter(d => (d[field] ? d[field] : (field === "AssignedTo" ? "" : (field === "Status" ? "" : (field === "Priority" ? "" : "")))) === value);
+        }
+      });
+      return data;
+    }
+    function updateAllCharts() {
+      let data = filterData();
+      let aData = assignedToData(data);
+      assignedToChart.data.labels = aData.labels;
+      assignedToChart.data.datasets[0].data = aData.values;
+      assignedToChart.update();
+      let sData = statusData(data);
+      statusChart.data.labels = sData.labels;
+      statusChart.data.datasets[0].data = sData.values;
+      statusChart.update();
+      let pData = priorityData(data);
+      priorityChart.data.labels = pData.labels;
+      priorityChart.data.datasets[0].data = pData.values;
+      priorityChart.update();
+      let payData = payorData(data);
+      payorChart.data.labels = payData.labels;
+      payorChart.data.datasets[0].data = payData.values;
+      payorChart.update();
+      renderTable(data);
+    }
+
+    let assignedToChart, statusChart, priorityChart, payorChart;
+    $(function() {
+      let aData = assignedToData(rawData);
+      assignedToChart = new Chart($("#assignedToChart"), {
+        type: 'bar',
+        data: {
+          labels: aData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: aData.values,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { AssignedTo: label === "(Unassigned)" ? "" : label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: {
+            legend: { display: false }
+          },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      let sData = statusData(rawData);
+      statusChart = new Chart($("#statusChart"), {
+        type: 'doughnut',
+        data: {
+          labels: sData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: sData.values,
+            backgroundColor: [
+              '#0d6efd', '#6c757d', '#198754', '#ffc107', '#dc3545', '#adb5bd'
+            ]
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { Status: label === "(No Status)" ? "" : label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { position: 'bottom' } },
+          cutout: "65%"
+        }
+      });
+
+      let pData = priorityData(rawData);
+      priorityChart = new Chart($("#priorityChart"), {
+        type: 'bar',
+        data: {
+          labels: pData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: pData.values,
+            backgroundColor: 'rgba(253, 126, 20, 0.7)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { Priority: label === "(None)" ? "" : label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: {
+            legend: { display: false }
+          },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      let payData = payorData(rawData);
+      payorChart = new Chart($("#payorChart"), {
+        type: 'pie',
+        data: {
+          labels: payData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: payData.values,
+            backgroundColor: [
+              '#007bff','#6610f2','#6f42c1','#d63384','#fd7e14','#ffc107','#28a745','#20c997'
+            ]
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { "Payor Name": label === "(Unknown)" ? "" : label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      renderTable(rawData);
+    });
+  </script>
+</body>
+</html>
