@@ -433,7 +433,7 @@
           <td>${d.Patient || ""}</td>
           <td>${d.QueueDate || ""}</td>
           <td>${d.DueDate || ""}</td>
-          <td>${d.ParentUnit || ""}</td>
+          <td>${d["Parent Unit"]|| ""}</td>
         </tr>`;
       });
       $("#tableBody").html(rows);
