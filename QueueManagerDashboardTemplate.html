@@ -299,6 +299,115 @@
         values: Object.values(count)
       };
     }
+    function highPriorityByAssignedTo(data) {
+      let count = {};
+      data.forEach(d => {
+        if (d.Priority === 'High') {
+          let key = d.AssignedTo ? d.AssignedTo : '(Unassigned)';
+          count[key] = (count[key] || 0) + 1;
+        }
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function overdueVsDueThisWeek(data) {
+      let today = new Date();
+      let startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0,0,0,0);
+      let endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      let count = { overdue: 0, "due this week": 0 };
+      data.forEach(d => {
+        let due = new Date(d.DueDate);
+        if (isNaN(due)) return;
+        if (due < today) {
+          count.overdue++;
+        } else if (due >= startOfWeek && due <= endOfWeek) {
+          count["due this week"]++;
+        }
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function parentUnitData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.ParentUnit ? d.ParentUnit : '(Unknown)';
+        count[key] = (count[key] || 0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function dueDateTrendData(data) {
+      let count = {};
+      data.forEach(d => {
+        let due = new Date(d.DueDate);
+        if (isNaN(due)) return;
+        let weekLabel = getWeekLabel(due);
+        count[weekLabel] = (count[weekLabel] || 0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+    function dueDateThisWeekData(data) {
+      let today = new Date();
+      let startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0,0,0,0);
+      let endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      let days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      let count = { Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0 };
+      data.forEach(d => {
+        let due = new Date(d.DueDate);
+        if (isNaN(due)) return;
+        if (due >= startOfWeek && due <= endOfWeek) {
+          let label = days[due.getDay()];
+          count[label] = (count[label] || 0) + 1;
+        }
+      });
+      return {
+        labels: days,
+        values: days.map(day => count[day])
+      };
+    }
+    function queueAgingData(data) {
+      let today = new Date();
+      let buckets = { '0-7': 0, '8-14': 0, '15-30': 0, '31-60': 0, '60+': 0 };
+      data.forEach(d => {
+        if (!d.QueueDate) return;
+        let qDateStr = d.QueueDate.split('-')[0].trim();
+        let qDate = new Date(qDateStr);
+        if (isNaN(qDate)) qDate = new Date(d.QueueDate);
+        if (isNaN(qDate)) return;
+        let diff = Math.floor((today - qDate) / 86400000);
+        if (diff <= 7) buckets['0-7']++;
+        else if (diff <= 14) buckets['8-14']++;
+        else if (diff <= 30) buckets['15-30']++;
+        else if (diff <= 60) buckets['31-60']++;
+        else buckets['60+']++;
+      });
+      return {
+        labels: Object.keys(buckets),
+        values: Object.values(buckets)
+      };
+    }
+    function getWeekLabel(date) {
+      let year = date.getFullYear();
+      let firstDay = new Date(year, 0, 1);
+      let days = Math.floor((date - firstDay) / 86400000);
+      let week = Math.ceil((days + firstDay.getDay() + 1) / 7);
+      return `${year}-W${week}`;
+    }
     function renderTable(data) {
       let rows = "";
       data.forEach(d => {
@@ -343,10 +452,36 @@
       payorChart.data.labels = payData.labels;
       payorChart.data.datasets[0].data = payData.values;
       payorChart.update();
+      let hpData = highPriorityByAssignedTo(data);
+      highPriorityChart.data.labels = hpData.labels;
+      highPriorityChart.data.datasets[0].data = hpData.values;
+      highPriorityChart.update();
+      let odData = overdueVsDueThisWeek(data);
+      overdueChart.data.labels = odData.labels;
+      overdueChart.data.datasets[0].data = odData.values;
+      overdueChart.update();
+      let puData = parentUnitData(data);
+      parentUnitChart.data.labels = puData.labels;
+      parentUnitChart.data.datasets[0].data = puData.values;
+      parentUnitChart.update();
+      let trendData = dueDateTrendData(data);
+      dueDateTrendChart.data.labels = trendData.labels;
+      dueDateTrendChart.data.datasets[0].data = trendData.values;
+      dueDateTrendChart.update();
+      let weekData = dueDateThisWeekData(data);
+      dueDateThisWeekChart.data.labels = weekData.labels;
+      dueDateThisWeekChart.data.datasets[0].data = weekData.values;
+      dueDateThisWeekChart.update();
+      let agingData = queueAgingData(data);
+      queueAgingChart.data.labels = agingData.labels;
+      queueAgingChart.data.datasets[0].data = agingData.values;
+      queueAgingChart.update();
       renderTable(data);
     }
 
-    let assignedToChart, statusChart, priorityChart, payorChart;
+    let assignedToChart, statusChart, priorityChart, payorChart,
+        highPriorityChart, overdueChart, parentUnitChart,
+        dueDateTrendChart, dueDateThisWeekChart, queueAgingChart;
     $(function() {
       let aData = assignedToData(rawData);
       assignedToChart = new Chart($("#assignedToChart"), {
@@ -459,6 +594,91 @@
           },
           plugins: { legend: { position: 'bottom' } }
         }
+      });
+
+      let hpData = highPriorityByAssignedTo(rawData);
+      highPriorityChart = new Chart($("#highPriorityChart"), {
+        type: 'bar',
+        data: {
+          labels: hpData.labels,
+          datasets: [{
+            label: '# High Priority',
+            data: hpData.values,
+            backgroundColor: 'rgba(220, 53, 69, 0.7)'
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+
+      let odData = overdueVsDueThisWeek(rawData);
+      overdueChart = new Chart($("#overdueChart"), {
+        type: 'pie',
+        data: {
+          labels: odData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: odData.values,
+            backgroundColor: ['#dc3545', '#ffc107']
+          }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      let puData = parentUnitData(rawData);
+      parentUnitChart = new Chart($("#parentUnitChart"), {
+        type: 'bar',
+        data: {
+          labels: puData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: puData.values,
+            backgroundColor: 'rgba(40, 167, 69, 0.6)'
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+
+      let trendData = dueDateTrendData(rawData);
+      dueDateTrendChart = new Chart($("#dueDateTrendChart"), {
+        type: 'line',
+        data: {
+          labels: trendData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: trendData.values,
+            fill: false,
+            borderColor: '#007bff'
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+
+      let weekData = dueDateThisWeekData(rawData);
+      dueDateThisWeekChart = new Chart($("#dueDateThisWeekChart"), {
+        type: 'bar',
+        data: {
+          labels: weekData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: weekData.values,
+            backgroundColor: 'rgba(23, 162, 184, 0.6)'
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+
+      let agingData = queueAgingData(rawData);
+      queueAgingChart = new Chart($("#queueAgingChart"), {
+        type: 'bar',
+        data: {
+          labels: agingData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: agingData.values,
+            backgroundColor: 'rgba(108, 117, 125, 0.6)'
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
       });
 
       renderTable(rawData);
