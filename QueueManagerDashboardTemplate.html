@@ -454,7 +454,8 @@
       payorChart.update();
       let hpData = highPriorityByAssignedTo(data);
       highPriorityChart.data.labels = hpData.labels;
-      highPriorityChart.data.datasets[0].data = hpData.values;
+      highPriorityChart.data.datasets[0].data = hpData.values.map((v, i) => ({ x: i, y: v, r: Math.max(5, v * 3) }));
+      highPriorityChart.options.scales.x.ticks.callback = function(value) { return hpData.labels[value]; };
       highPriorityChart.update();
       let odData = overdueVsDueThisWeek(data);
       overdueChart.data.labels = odData.labels;
@@ -598,21 +599,32 @@
 
       let hpData = highPriorityByAssignedTo(rawData);
       highPriorityChart = new Chart($("#highPriorityChart"), {
-        type: 'bar',
+        type: 'bubble',
         data: {
           labels: hpData.labels,
           datasets: [{
             label: '# High Priority',
-            data: hpData.values,
+            data: hpData.values.map((v, i) => ({ x: i, y: v, r: Math.max(5, v * 3) })),
             backgroundColor: 'rgba(220, 53, 69, 0.7)'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+        options: {
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: {
+            x: {
+              ticks: {
+                callback: function(value) { return hpData.labels[value]; }
+              }
+            },
+            y: { beginAtZero: true }
+          }
+        }
       });
 
       let odData = overdueVsDueThisWeek(rawData);
       overdueChart = new Chart($("#overdueChart"), {
-        type: 'pie',
+        type: 'doughnut',
         data: {
           labels: odData.labels,
           datasets: [{
@@ -621,7 +633,7 @@
             backgroundColor: ['#dc3545', '#ffc107']
           }]
         },
-        options: { plugins: { legend: { position: 'bottom' } } }
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
       });
 
       let puData = parentUnitData(rawData);
@@ -635,7 +647,7 @@
             backgroundColor: 'rgba(40, 167, 69, 0.6)'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { plugins: { legend: { display: false } }, responsive: true, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
       });
 
       let trendData = dueDateTrendData(rawData);
@@ -669,7 +681,7 @@
 
       let agingData = queueAgingData(rawData);
       queueAgingChart = new Chart($("#queueAgingChart"), {
-        type: 'bar',
+        type: 'bar', // histogram representation
         data: {
           labels: agingData.labels,
           datasets: [{
