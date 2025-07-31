@@ -1132,7 +1132,7 @@
 
         let clData = callLogData(rawData);
         callLogChart = new Chart($("#callLogChart"), {
-          type: 'bar',
+          type: 'doughnut',
           data: {
             labels: clData.labels,
             datasets: [{
@@ -1149,9 +1149,8 @@
               }
               updateAllCharts();
             },
-            plugins: { legend: { display: false } },
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
+            plugins: { legend: { position: 'bottom' } },
+            cutout: '65%'
           }
         });
         callLogChart.data.datasets[0].baseColor = 'rgba(100, 181, 246, 0.6)';
