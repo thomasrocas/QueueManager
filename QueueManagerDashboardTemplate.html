@@ -208,6 +208,26 @@
           <div class="chart-title">Queue Aging</div>
           <canvas id="queueAgingChart"></canvas>
         </div>
+
+        <div class="chart-card">
+          <div class="chart-title">RFNP Breakdown</div>
+          <canvas id="rfnpChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">subRFNP Breakdown</div>
+          <canvas id="subRfnpChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Parent Unit Distribution</div>
+          <canvas id="parentUnitDistChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Admin Distribution</div>
+          <canvas id="adminChart"></canvas>
+        </div>
       </div>
       <div id="data-table">
         <div class="filter-label">Details Table (Filtered):</div>
@@ -426,6 +446,42 @@
         values: Object.values(count)
       };
     }
+
+    function rfnpData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.RFNP ? d.RFNP : '(None)';
+        count[key] = (count[key] || 0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+
+    function subRfnpData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.subRFNP ? d.subRFNP : '(None)';
+        count[key] = (count[key] || 0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
+
+    function adminData(data) {
+      let count = {};
+      data.forEach(d => {
+        let key = d.Admin ? d.Admin : '(None)';
+        count[key] = (count[key] || 0) + 1;
+      });
+      return {
+        labels: Object.keys(count),
+        values: Object.values(count)
+      };
+    }
     function dueDateTrendData(data) {
       let count = {};
       data.forEach(d => {
@@ -610,12 +666,37 @@
       queueAgingChart.data.datasets[0].data = agingData.values;
       setChartColors(queueAgingChart, 'QueueAgeRange');
       queueAgingChart.update();
+
+      let rfData = rfnpData(data);
+      rfnpChart.data.labels = rfData.labels;
+      rfnpChart.data.datasets[0].data = rfData.values;
+      setChartColors(rfnpChart, 'RFNP');
+      rfnpChart.update();
+
+      let subData = subRfnpData(data);
+      subRfnpChart.data.labels = subData.labels;
+      subRfnpChart.data.datasets[0].data = subData.values;
+      setChartColors(subRfnpChart, 'subRFNP');
+      subRfnpChart.update();
+
+      let puDistData = parentUnitData(data);
+      parentUnitDistChart.data.labels = puDistData.labels;
+      parentUnitDistChart.data.datasets[0].data = puDistData.values;
+      setChartColors(parentUnitDistChart, 'Parent Unit');
+      parentUnitDistChart.update();
+
+      let adData = adminData(data);
+      adminChart.data.labels = adData.labels;
+      adminChart.data.datasets[0].data = adData.values;
+      setChartColors(adminChart, 'Admin');
+      adminChart.update();
       renderTable(data);
     }
 
     let assignedToChart, statusChart, priorityChart, payorChart,
         highPriorityChart, overdueChart, parentUnitChart,
         dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
+        rfnpChart, subRfnpChart, parentUnitDistChart, adminChart,
         table;
     $(function() {
       feather.replace();
@@ -902,6 +983,113 @@
         }
       });
       queueAgingChart.data.datasets[0].baseColor = 'rgba(108, 117, 125, 0.6)';
+
+      let rfData = rfnpData(rawData);
+      rfnpChart = new Chart($("#rfnpChart"), {
+        type: 'bar',
+        data: {
+          labels: rfData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: rfData.values,
+            backgroundColor: 'rgba(255, 159, 64, 0.6)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              toggleFilter('RFNP', label === "(None)" ? "" : label);
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } }
+        }
+      });
+      rfnpChart.data.datasets[0].baseColor = 'rgba(255, 159, 64, 0.6)';
+
+      let subData = subRfnpData(rawData);
+      subRfnpChart = new Chart($("#subRfnpChart"), {
+        type: 'bar',
+        data: {
+          labels: subData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: subData.values,
+            backgroundColor: 'rgba(111, 66, 193, 0.6)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              toggleFilter('subRFNP', label === "(None)" ? "" : label);
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } }
+        }
+      });
+      subRfnpChart.data.datasets[0].baseColor = 'rgba(111, 66, 193, 0.6)';
+
+      let puDistData = parentUnitData(rawData);
+      parentUnitDistChart = new Chart($("#parentUnitDistChart"), {
+        type: 'bar',
+        data: {
+          labels: puDistData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: puDistData.values,
+            backgroundColor: 'rgba(40, 167, 69, 0.6)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              toggleFilter('Parent Unit', label === "(Unknown)" ? "" : label);
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } }
+        }
+      });
+      parentUnitDistChart.data.datasets[0].baseColor = 'rgba(40, 167, 69, 0.6)';
+
+      let adData = adminData(rawData);
+      adminChart = new Chart($("#adminChart"), {
+        type: 'bar',
+        data: {
+          labels: adData.labels,
+          datasets: [{
+            label: '# Claims',
+            data: adData.values,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)'
+          }]
+        },
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              toggleFilter('Admin', label === "(None)" ? "" : label);
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+      adminChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
 
       renderTable(rawData);
       table = $('#data-table table').DataTable({
