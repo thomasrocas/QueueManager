@@ -869,6 +869,17 @@
           { text: feather.icons["zoom-out"].toSvg(), action: function(){ zoomOut(); } }
         ]
       });
+
+      // Add page length selector next to the export buttons
+      const pageLength = $('<select id="pageLength"></select>');
+      table.settings().init().lengthMenu.forEach(len => {
+        pageLength.append(`<option value="${len}">${len}</option>`);
+      });
+      $('.dt-buttons').append(pageLength);
+      $('#pageLength').on('change', function() {
+        table.page.len(parseInt($(this).val())).draw();
+      });
+
       feather.replace();
       applyZoom();
     });
