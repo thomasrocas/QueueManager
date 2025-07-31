@@ -233,11 +233,15 @@
           <canvas id="parentUnitDistChart"></canvas>
         </div>
 
-        <div class="chart-card">
-          <div class="chart-title">Admin Distribution</div>
-          <canvas id="adminChart"></canvas>
+          <div class="chart-card">
+            <div class="chart-title">Admin Distribution</div>
+            <canvas id="adminChart"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Call Log</div>
+            <canvas id="callLogChart"></canvas>
+          </div>
         </div>
-      </div>
       <div id="data-table">
         <div class="filter-label">Details Table (Filtered):</div>
         <table>
@@ -405,18 +409,29 @@
         values: Object.values(count)
       };
     }
-    function payorData(data) {
-      let count = {};
-      data.forEach(d => {
-        let key = d["Payor Name"] ? d["Payor Name"] : '(Unknown)';
-        count[key] = (count[key]||0) + 1;
-      });
-      return {
-        labels: Object.keys(count),
-        values: Object.values(count)
-      };
-    }
-    function highPriorityByAssignedTo(data) {
+      function payorData(data) {
+        let count = {};
+        data.forEach(d => {
+          let key = d["Payor Name"] ? d["Payor Name"] : '(Unknown)';
+          count[key] = (count[key]||0) + 1;
+        });
+        return {
+          labels: Object.keys(count),
+          values: Object.values(count)
+        };
+      }
+      function callLogData(data) {
+        let count = {};
+        data.forEach(d => {
+          let key = d["Call Log"] ? d["Call Log"] : '(None)';
+          count[key] = (count[key] || 0) + 1;
+        });
+        return {
+          labels: Object.keys(count),
+          values: Object.values(count)
+        };
+      }
+      function highPriorityByAssignedTo(data) {
       let count = {};
       data.forEach(d => {
         if (d.Priority === 'High') {
@@ -700,21 +715,28 @@
       parentUnitDistChart.data.labels = puDistData.labels;
       parentUnitDistChart.data.datasets[0].data = puDistData.values;
       setChartColors(parentUnitDistChart, 'Parent Unit');
-      parentUnitDistChart.update();
+        parentUnitDistChart.update();
 
-      let adData = adminData(data);
-      adminChart.data.labels = adData.labels;
-      adminChart.data.datasets[0].data = adData.values;
-      setChartColors(adminChart, 'Admin');
-      adminChart.update();
-      renderTable(data);
-    }
+        let adData = adminData(data);
+        adminChart.data.labels = adData.labels;
+        adminChart.data.datasets[0].data = adData.values;
+        setChartColors(adminChart, 'Admin');
+        adminChart.update();
 
-    let assignedToChart, statusChart, priorityChart, payorChart,
-        highPriorityChart, overdueChart, parentUnitChart,
-        dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
-        rfnpChart, subRfnpChart, parentUnitDistChart, adminChart,
-        table;
+        let clData = callLogData(data);
+        callLogChart.data.labels = clData.labels;
+        callLogChart.data.datasets[0].data = clData.values;
+        setChartColors(callLogChart, 'Call Log');
+        callLogChart.update();
+        renderTable(data);
+      }
+
+      let assignedToChart, statusChart, priorityChart, payorChart,
+          highPriorityChart, overdueChart, parentUnitChart,
+          dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
+          rfnpChart, subRfnpChart, parentUnitDistChart, adminChart,
+          callLogChart,
+          table;
     $(function() {
       feather.replace();
       let aData = assignedToData(rawData);
@@ -1106,9 +1128,35 @@
           scales: { y: { beginAtZero: true } }
         }
       });
-      adminChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
+        adminChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
 
-      renderTable(rawData);
+        let clData = callLogData(rawData);
+        callLogChart = new Chart($("#callLogChart"), {
+          type: 'bar',
+          data: {
+            labels: clData.labels,
+            datasets: [{
+              label: '# Entries',
+              data: clData.values,
+              backgroundColor: 'rgba(100, 181, 246, 0.6)'
+            }]
+          },
+          options: {
+            onClick: function(e, items) {
+              if(items.length) {
+                const label = this.data.labels[items[0].index];
+                toggleFilter('Call Log', label === "(None)" ? "" : label);
+              }
+              updateAllCharts();
+            },
+            plugins: { legend: { display: false } },
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+        callLogChart.data.datasets[0].baseColor = 'rgba(100, 181, 246, 0.6)';
+
+        renderTable(rawData);
       table = $('#data-table table').DataTable({
         scrollX: true,
         scrollY: '400px',
