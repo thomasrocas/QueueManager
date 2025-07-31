@@ -624,7 +624,7 @@
         d.DueDate || "",
         d["Event Date"] || "",
         `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>` +
-        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Calls</button>` : "")
+        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Call Log</button>` : "")
       ]);
       if (table) {
         table.clear().rows.add(rows).draw();
