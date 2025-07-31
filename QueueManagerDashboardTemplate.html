@@ -531,6 +531,7 @@
         highPriorityChart, overdueChart, parentUnitChart,
         dueDateTrendChart, dueDateThisWeekChart, queueAgingChart;
     $(function() {
+      feather.replace();
       let aData = assignedToData(rawData);
       assignedToChart = new Chart($("#assignedToChart"), {
         type: 'bar',
