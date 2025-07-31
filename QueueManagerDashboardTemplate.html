@@ -474,6 +474,20 @@
             if (isNaN(due)) return false;
             let days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
             return days[due.getDay()] === value;
+          } else if (field === 'QueueAgeRange') {
+            if (!d.QueueDate) return false;
+            let qDateStr = d.QueueDate.split('-')[0].trim();
+            let qDate = new Date(qDateStr);
+            if (isNaN(qDate)) qDate = new Date(d.QueueDate);
+            if (isNaN(qDate)) return false;
+            let diff = Math.floor((new Date() - qDate) / 86400000);
+            let bucket;
+            if (diff <= 7) bucket = '0-7';
+            else if (diff <= 14) bucket = '8-14';
+            else if (diff <= 30) bucket = '15-30';
+            else if (diff <= 60) bucket = '31-60';
+            else bucket = '60+';
+            return bucket === value;
           } else {
             return (d[field] || '') === value;
           }
@@ -799,7 +813,20 @@
             backgroundColor: 'rgba(108, 117, 125, 0.6)'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { QueueAgeRange: label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
       });
 
       renderTable(rawData);
