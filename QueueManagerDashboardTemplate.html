@@ -157,6 +157,16 @@
       cursor: pointer;
     }
     .view-btn:hover { background: #0056b3; }
+    .call-log-btn {
+      padding: 4px 8px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .call-log-btn:hover { background: #1e7e34; }
   </style>
 </head>
 <body>
@@ -327,6 +337,21 @@
       }
     }
 
+    function openCallLog(queueID, sourceTable, mrn, claimID) {
+      const param = JSON.stringify({
+        QueueID: queueID,
+        ClaimID: claimID,
+        MRN: mrn,
+        SourceTable: sourceTable
+      });
+      if (window.FileMaker && window.FileMaker.PerformScript) {
+        FileMaker.PerformScript('OpenCallLog', param);
+      } else {
+        const url =
+          'fmp://$/QueueManager?script=OpenCallLog&param=' + encodeURIComponent(param);
+        window.location.href = url;
+      }
+    }
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
     const rawData = [
      {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1", "ClaimID":"106851_75349_250521250618","DueDate":"8/25/2025","Event Date":"5/21/2025 - 6/18/2025","MRN":"1068514","Parent Unit":"Home Health","Patient":"Warren, Sy","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:14 AM","QueueID":"A824C9E5-092B-CD45-8A04-FA657A9F1CC3","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":""},
@@ -604,7 +629,8 @@
         d.Admin || "",
         d.DueDate || "",
         d["Event Date"] || "",
-        `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>`
+        `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>` +
+        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Call Log</button>` : "")
       ]);
       if (table) {
         table.clear().rows.add(rows).draw();
