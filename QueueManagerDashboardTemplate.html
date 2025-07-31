@@ -148,6 +148,15 @@
       .main-content { padding: 16px; }
       .right-panel { width: 98vw; }
     }
+    .view-btn {
+      padding: 4px 8px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .view-btn:hover { background: #0056b3; }
   </style>
 </head>
 <body>
@@ -246,6 +255,7 @@
               <th>Admin</th>
               <th>Due Date</th>
               <th>Event Date</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -291,6 +301,12 @@
     function zoomOut() {
       zoomLevel = Math.max(0.5, zoomLevel - 0.1);
       applyZoom();
+    }
+
+    function openPanelRecord(queueID, sourceTable, mrn, claimID) {
+      const param = { QueueID: queueID, SourceTable: sourceTable, MRN: mrn, ClaimID: claimID };
+      const url = 'fmp://$/QueueManager?script=OpenPanelRecord&param=' + encodeURIComponent(JSON.stringify(param));
+      window.location.href = url;
     }
 
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
@@ -558,7 +574,8 @@
         d.AssignedTo || "",
         d.Admin || "",
         d.DueDate || "",
-        d["Event Date"] || ""
+        d["Event Date"] || "",
+        `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>`
       ]);
       if (table) {
         table.clear().rows.add(rows).draw();
