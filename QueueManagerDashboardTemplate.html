@@ -308,9 +308,19 @@
     }
 
     function openPanelRecord(queueID, sourceTable, mrn, claimID) {
-      const param = { QueueID: queueID, SourceTable: sourceTable, MRN: mrn, ClaimID: claimID };
-      const url = 'fmp://$/QueueManager?script=OpenPanelRecord&param=' + encodeURIComponent(JSON.stringify(param));
-      window.location.href = url;
+      const param = JSON.stringify({
+        QueueID: queueID,
+        ClaimID: claimID,
+        MRN: mrn,
+        SourceTable: sourceTable
+      });
+      if (window.FileMaker && window.FileMaker.PerformScript) {
+        FileMaker.PerformScript('OpenPanelRecord', param);
+      } else {
+        const url =
+          'fmp://$/QueueManager?script=OpenPanelRecord&param=' + encodeURIComponent(param);
+        window.location.href = url;
+      }
     }
 
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
