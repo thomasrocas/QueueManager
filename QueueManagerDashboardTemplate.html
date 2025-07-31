@@ -201,15 +201,18 @@
         <table>
           <thead>
             <tr>
-              <th>QueueID</th>
-              <th>AssignedTo</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Payor Name</th>
+              <th>Queue ID</th>
               <th>Patient</th>
-              <th>QueueDate</th>
-              <th>DueDate</th>
+              <th>Payor Name</th>
               <th>Parent Unit</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>RFNP</th>
+              <th>subRFNP</th>
+              <th>Assigned To</th>
+              <th>Admin</th>
+              <th>Due Date</th>
+              <th>Event Date</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -426,14 +429,17 @@
       data.forEach(d => {
         rows += `<tr>
           <td>${d.QueueID}</td>
-          <td>${d.AssignedTo || ""}</td>
-          <td>${d.Status || ""}</td>
-          <td>${d.Priority || ""}</td>
-          <td>${d["Payor Name"] || ""}</td>
           <td>${d.Patient || ""}</td>
-          <td>${d.QueueDate || ""}</td>
+          <td>${d["Payor Name"] || ""}</td>
+          <td>${d["Parent Unit"] || ""}</td>
+          <td>${d.Priority || ""}</td>
+          <td>${d.Status || ""}</td>
+          <td>${d.RFNP || ""}</td>
+          <td>${d.subRFNP || ""}</td>
+          <td>${d.AssignedTo || ""}</td>
+          <td>${d.Admin || ""}</td>
           <td>${d.DueDate || ""}</td>
-          <td>${d["Parent Unit"]  || ""}</td>
+          <td>${d["Event Date"] || ""}</td>
         </tr>`;
       });
       $("#tableBody").html(rows);
