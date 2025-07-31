@@ -245,12 +245,6 @@
           <div class="chart-title">Queue Aging</div>
           <canvas id="queueAgingChart"></canvas>
         </div>
-
-        <div class="chart-card">
-          <div class="chart-title">Parent Unit Distribution</div>
-          <canvas id="parentUnitDistChart"></canvas>
-        </div>
-
           <div class="chart-card">
             <div class="chart-title">Call Log</div>
             <canvas id="callLogChart"></canvas>
@@ -630,7 +624,7 @@
         d.DueDate || "",
         d["Event Date"] || "",
         `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>` +
-        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Call Log</button>` : "")
+        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Calls</button>` : "")
       ]);
       if (table) {
         table.clear().rows.add(rows).draw();
@@ -1117,32 +1111,6 @@
       });
       subRfnpChart.data.datasets[0].baseColor = 'rgba(111, 66, 193, 0.6)';
 
-      let puDistData = parentUnitData(rawData);
-      parentUnitDistChart = new Chart($("#parentUnitDistChart"), {
-        type: 'bar',
-        data: {
-          labels: puDistData.labels,
-          datasets: [{
-            label: '# Claims',
-            data: puDistData.values,
-            backgroundColor: 'rgba(40, 167, 69, 0.6)'
-          }]
-        },
-        options: {
-          onClick: function(e, items) {
-            if(items.length) {
-              const label = this.data.labels[items[0].index];
-              toggleFilter('Parent Unit', label === "(Unknown)" ? "" : label);
-            }
-            updateAllCharts();
-          },
-          plugins: { legend: { display: false } },
-          responsive: true,
-          indexAxis: 'y',
-          scales: { x: { beginAtZero: true } }
-        }
-      });
-      parentUnitDistChart.data.datasets[0].baseColor = 'rgba(40, 167, 69, 0.6)';
 
       let adData = adminData(rawData);
       adminChart = new Chart($("#adminChart"), {
