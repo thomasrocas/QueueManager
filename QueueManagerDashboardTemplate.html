@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RCM Dashboard Chart.js</title>
+  <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
@@ -146,7 +147,11 @@
   <!-- Left Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-arrow" onclick="toggleSidebar()">‹</button>
+
     <h3>RCM System</h3>
+   <div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Dashboard')">📊 <span class="menu-text">Dashboard</span></div><div class="menu-item active" onclick="showDashboardPanel(this)"><i data-feather="trending-up" style="margin-right:6px;"></i><span class="menu-text">AR Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Unbilled Dashboard')"><i data-feather="clock" style="margin-right:6px;"></i><span class="menu-text">Unbilled Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Authorization')"><i data-feather="check-circle" style="margin-right:6px;"></i><span class="menu-text">Authorization</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Validation')"><i data-feather="alert-circle" style="margin-right:6px;"></i><span class="menu-text">Validation</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Claims')"><i data-feather="file-text" style="margin-right:6px;"></i><span class="menu-text">Claims</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'UnbilledAR')"><i data-feather="alert-octagon" style="margin-right:6px;"></i><span class="menu-text">UnbilledAR</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'BilledAR')"><i data-feather="dollar-sign" style="margin-right:6px;"></i><span class="menu-text">BilledAR</span></div><div class="menu-item" onclick=" FileMaker.PerformScript('OnClickRCMMenu', 'Queue Manager')"><i data-feather="shuffle" style="margin-right:6px;"></i><span class="menu-text">Queue Manager</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Settings')"><i data-feather="settings" style="margin-right:6px;"></i><span class="menu-text">Settings</span></div>
+    </div>
+
     <!-- Optional: Add sidebar menu items here -->
   </div>
 
