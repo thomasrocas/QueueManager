@@ -304,8 +304,14 @@
     }
 
     function openPanelRecord(queueID, sourceTable, mrn, claimID) {
-      const param = { QueueID: queueID, SourceTable: sourceTable, MRN: mrn, ClaimID: claimID };
-      const url = 'fmp://$/QueueManager?script=OpenPanelRecord&param=' + encodeURIComponent(JSON.stringify(param));
+      const param = {
+        QueueID: queueID,
+        SourceTable: sourceTable,
+        MRN: mrn,
+        ClaimID: claimID
+      };
+      const fileURL = 'fmp://$/QueueManager.fmp12';
+      const url = `${fileURL}?script=OpenPanelRecord&param=${encodeURIComponent(JSON.stringify(param))}`;
       window.location.href = url;
     }
 
