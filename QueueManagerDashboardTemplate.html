@@ -441,9 +441,32 @@
     function filterData() {
       let data = rawData;
       Object.entries(currentFilter).forEach(([field, value]) => {
-        if(value !== null) {
-          data = data.filter(d => (d[field] ? d[field] : (field === "AssignedTo" ? "" : (field === "Status" ? "" : (field === "Priority" ? "" : "")))) === value);
-        }
+        data = data.filter(d => {
+          if (field === 'OverdueStatus') {
+            let due = new Date(d.DueDate);
+            if (isNaN(due)) return false;
+            let today = new Date();
+            let startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            startOfWeek.setHours(0,0,0,0);
+            let endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            if (value === 'overdue') return due < today;
+            if (value === 'due this week') return due >= startOfWeek && due <= endOfWeek;
+            return false;
+          } else if (field === 'DueDateWeek') {
+            let due = new Date(d.DueDate);
+            if (isNaN(due)) return false;
+            return getWeekLabel(due) === value;
+          } else if (field === 'DueDateDay') {
+            let due = new Date(d.DueDate);
+            if (isNaN(due)) return false;
+            let days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            return days[due.getDay()] === value;
+          } else {
+            return (d[field] || '') === value;
+          }
+        });
       });
       return data;
     }
@@ -622,6 +645,15 @@
           }]
         },
         options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = hpData.labels[items[0].index];
+              currentFilter = { AssignedTo: label === "(Unassigned)" ? "" : label, Priority: "High" };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
           plugins: { legend: { display: false } },
           responsive: true,
           scales: {
@@ -646,7 +678,19 @@
             backgroundColor: ['#dc3545', '#ffc107']
           }]
         },
-        options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { OverdueStatus: label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { position: 'bottom' } },
+          cutout: '65%'
+        }
       });
 
       let puData = parentUnitData(rawData);
@@ -660,7 +704,21 @@
             backgroundColor: 'rgba(40, 167, 69, 0.6)'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { "Parent Unit": label === "(Unknown)" ? "" : label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } }
+        }
       });
 
       let trendData = dueDateTrendData(rawData);
@@ -675,7 +733,20 @@
             borderColor: '#007bff'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { DueDateWeek: label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
       });
 
       let weekData = dueDateThisWeekData(rawData);
@@ -689,7 +760,20 @@
             backgroundColor: 'rgba(23, 162, 184, 0.6)'
           }]
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, scales: { y: { beginAtZero: true } } }
+        options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              currentFilter = { DueDateDay: label };
+            } else {
+              currentFilter = {};
+            }
+            updateAllCharts();
+          },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
       });
 
       let agingData = queueAgingData(rawData);
