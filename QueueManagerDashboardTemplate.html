@@ -166,6 +166,7 @@
   <div class="main-content">
     <div id="dashboard">
       <div class="dashboard-title">RCM Queue Dashboard</div>
+      <button id="clearFilters" onclick="clearAllFilters()" style="margin-bottom:10px;">Clear All Filters</button>
       <div class="charts-grid">
         <div class="chart-card">
           <div class="chart-title">Assigned To Distribution</div>
@@ -297,6 +298,43 @@
 {"Admin":"","AssignedTo":"Cristina Del Rosario","ClaimID":"111579_76644_250703250723","DueDate":"8/25/2025","Event Date":"7/3/2025 - 7/23/2025","MRN":"1115794","Parent Unit":"Home Health","Patient":"Showwefwaihat, Asma Y.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/1/2025 7:48:48 AM","QueueID":"9D144AB6-56A5-B344-95D2-07E3A10BE156","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":""}
     ];
     let currentFilter = {};
+
+    function toggleFilter(field, value) {
+      if(currentFilter[field] === value) {
+        delete currentFilter[field];
+      } else {
+        currentFilter[field] = value;
+      }
+    }
+
+    function clearAllFilters() {
+      currentFilter = {};
+      updateAllCharts();
+    }
+
+    function setChartColors(chart, field, condition) {
+      const ds = chart.data.datasets[0];
+      const labels = chart.data.labels;
+      const base = ds.baseColor;
+      const highlight = 'rgba(255,99,132,0.9)';
+      if(chart.config.type === 'line') {
+        ds.pointBackgroundColor = labels.map((lbl, idx) => {
+          const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
+          if(match) return highlight;
+          if(Array.isArray(base)) return base[idx % base.length];
+          return base;
+        });
+        return;
+      }
+      ds.backgroundColor = labels.map((lbl, idx) => {
+        const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
+        if(Array.isArray(base)) {
+          const color = base[idx % base.length];
+          return match ? highlight : color;
+        }
+        return match ? highlight : base;
+      });
+    }
 
     function assignedToData(data) {
       let count = {};
@@ -524,43 +562,53 @@
       let aData = assignedToData(data);
       assignedToChart.data.labels = aData.labels;
       assignedToChart.data.datasets[0].data = aData.values;
+      setChartColors(assignedToChart, 'AssignedTo');
       assignedToChart.update();
       let sData = statusData(data);
       statusChart.data.labels = sData.labels;
       statusChart.data.datasets[0].data = sData.values;
+      setChartColors(statusChart, 'Status');
       statusChart.update();
       let pData = priorityData(data);
       priorityChart.data.labels = pData.labels;
       priorityChart.data.datasets[0].data = pData.values;
+      setChartColors(priorityChart, 'Priority');
       priorityChart.update();
       let payData = payorData(data);
       payorChart.data.labels = payData.labels;
       payorChart.data.datasets[0].data = payData.values;
+      setChartColors(payorChart, 'Payor Name');
       payorChart.update();
       let hpData = highPriorityByAssignedTo(data);
       highPriorityChart.data.labels = hpData.labels;
       highPriorityChart.data.datasets[0].data = hpData.values.map((v, i) => ({ x: i, y: v, r: Math.max(5, v * 3) }));
       highPriorityChart.options.scales.x.ticks.callback = function(value) { return hpData.labels[value]; };
+      setChartColors(highPriorityChart, 'AssignedTo', label => currentFilter.Priority === 'High' && currentFilter.AssignedTo === label);
       highPriorityChart.update();
       let odData = overdueVsDueThisWeek(data);
       overdueChart.data.labels = odData.labels;
       overdueChart.data.datasets[0].data = odData.values;
+      setChartColors(overdueChart, 'OverdueStatus');
       overdueChart.update();
       let puData = parentUnitData(data);
       parentUnitChart.data.labels = puData.labels;
       parentUnitChart.data.datasets[0].data = puData.values;
+      setChartColors(parentUnitChart, 'Parent Unit');
       parentUnitChart.update();
       let trendData = dueDateTrendData(data);
       dueDateTrendChart.data.labels = trendData.labels;
       dueDateTrendChart.data.datasets[0].data = trendData.values;
+      setChartColors(dueDateTrendChart, 'DueDateWeek');
       dueDateTrendChart.update();
       let weekData = dueDateThisWeekData(data);
       dueDateThisWeekChart.data.labels = weekData.labels;
       dueDateThisWeekChart.data.datasets[0].data = weekData.values;
+      setChartColors(dueDateThisWeekChart, 'DueDateDay');
       dueDateThisWeekChart.update();
       let agingData = queueAgingData(data);
       queueAgingChart.data.labels = agingData.labels;
       queueAgingChart.data.datasets[0].data = agingData.values;
+      setChartColors(queueAgingChart, 'QueueAgeRange');
       queueAgingChart.update();
       renderTable(data);
     }
@@ -586,9 +634,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { AssignedTo: label === "(Unassigned)" ? "" : label };
-            } else {
-              currentFilter = {};
+              toggleFilter('AssignedTo', label === "(Unassigned)" ? "" : label);
             }
             updateAllCharts();
           },
@@ -599,6 +645,7 @@
           scales: { y: { beginAtZero: true } }
         }
       });
+      assignedToChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
 
       let sData = statusData(rawData);
       statusChart = new Chart($("#statusChart"), {
@@ -617,9 +664,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { Status: label === "(No Status)" ? "" : label };
-            } else {
-              currentFilter = {};
+              toggleFilter('Status', label === "(No Status)" ? "" : label);
             }
             updateAllCharts();
           },
@@ -627,6 +672,9 @@
           cutout: "65%"
         }
       });
+      statusChart.data.datasets[0].baseColor = [
+        '#0d6efd', '#6c757d', '#198754', '#ffc107', '#dc3545', '#adb5bd'
+      ];
 
       let pData = priorityData(rawData);
       priorityChart = new Chart($("#priorityChart"), {
@@ -643,9 +691,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { Priority: label === "(None)" ? "" : label };
-            } else {
-              currentFilter = {};
+              toggleFilter('Priority', label === "(None)" ? "" : label);
             }
             updateAllCharts();
           },
@@ -656,6 +702,7 @@
           scales: { y: { beginAtZero: true } }
         }
       });
+      priorityChart.data.datasets[0].baseColor = 'rgba(253, 126, 20, 0.7)';
 
       let payData = payorData(rawData);
       payorChart = new Chart($("#payorChart"), {
@@ -674,15 +721,16 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { "Payor Name": label === "(Unknown)" ? "" : label };
-            } else {
-              currentFilter = {};
+              toggleFilter('Payor Name', label === "(Unknown)" ? "" : label);
             }
             updateAllCharts();
           },
           plugins: { legend: { position: 'bottom' } }
         }
       });
+      payorChart.data.datasets[0].baseColor = [
+        '#007bff','#6610f2','#6f42c1','#d63384','#fd7e14','#ffc107','#28a745','#20c997'
+      ];
 
       let hpData = highPriorityByAssignedTo(rawData);
       highPriorityChart = new Chart($("#highPriorityChart"), {
@@ -699,9 +747,14 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = hpData.labels[items[0].index];
-              currentFilter = { AssignedTo: label === "(Unassigned)" ? "" : label, Priority: "High" };
-            } else {
-              currentFilter = {};
+              const val = label === "(Unassigned)" ? "" : label;
+              if(currentFilter.AssignedTo === val && currentFilter.Priority === 'High') {
+                delete currentFilter.AssignedTo;
+                delete currentFilter.Priority;
+              } else {
+                currentFilter.AssignedTo = val;
+                currentFilter.Priority = 'High';
+              }
             }
             updateAllCharts();
           },
@@ -717,6 +770,7 @@
           }
         }
       });
+      highPriorityChart.data.datasets[0].baseColor = 'rgba(220, 53, 69, 0.7)';
 
       let odData = overdueVsDueThisWeek(rawData);
       overdueChart = new Chart($("#overdueChart"), {
@@ -733,9 +787,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { OverdueStatus: label };
-            } else {
-              currentFilter = {};
+              toggleFilter('OverdueStatus', label);
             }
             updateAllCharts();
           },
@@ -743,6 +795,7 @@
           cutout: '65%'
         }
       });
+      overdueChart.data.datasets[0].baseColor = ['#dc3545', '#ffc107'];
 
       let puData = parentUnitData(rawData);
       parentUnitChart = new Chart($("#parentUnitChart"), {
@@ -759,9 +812,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { "Parent Unit": label === "(Unknown)" ? "" : label };
-            } else {
-              currentFilter = {};
+              toggleFilter('Parent Unit', label === "(Unknown)" ? "" : label);
             }
             updateAllCharts();
           },
@@ -771,6 +822,7 @@
           scales: { x: { beginAtZero: true } }
         }
       });
+      parentUnitChart.data.datasets[0].baseColor = 'rgba(40, 167, 69, 0.6)';
 
       let trendData = dueDateTrendData(rawData);
       dueDateTrendChart = new Chart($("#dueDateTrendChart"), {
@@ -788,9 +840,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { DueDateWeek: label };
-            } else {
-              currentFilter = {};
+              toggleFilter('DueDateWeek', label);
             }
             updateAllCharts();
           },
@@ -799,6 +849,7 @@
           scales: { y: { beginAtZero: true } }
         }
       });
+      dueDateTrendChart.data.datasets[0].baseColor = '#007bff';
 
       let weekData = dueDateThisWeekData(rawData);
       dueDateThisWeekChart = new Chart($("#dueDateThisWeekChart"), {
@@ -815,9 +866,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { DueDateDay: label };
-            } else {
-              currentFilter = {};
+              toggleFilter('DueDateDay', label);
             }
             updateAllCharts();
           },
@@ -826,6 +875,7 @@
           scales: { y: { beginAtZero: true } }
         }
       });
+      dueDateThisWeekChart.data.datasets[0].baseColor = 'rgba(23, 162, 184, 0.6)';
 
       let agingData = queueAgingData(rawData);
       queueAgingChart = new Chart($("#queueAgingChart"), {
@@ -842,9 +892,7 @@
           onClick: function(e, items) {
             if(items.length) {
               const label = this.data.labels[items[0].index];
-              currentFilter = { QueueAgeRange: label };
-            } else {
-              currentFilter = {};
+              toggleFilter('QueueAgeRange', label);
             }
             updateAllCharts();
           },
@@ -853,6 +901,7 @@
           scales: { y: { beginAtZero: true } }
         }
       });
+      queueAgingChart.data.datasets[0].baseColor = 'rgba(108, 117, 125, 0.6)';
 
       renderTable(rawData);
       table = $('#data-table table').DataTable({
