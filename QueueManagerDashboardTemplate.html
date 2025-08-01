@@ -72,6 +72,18 @@
       flex-direction: column;
       align-items: center;
       min-height: 320px;
+      transition: transform 0.3s, opacity 0.3s;
+      cursor: zoom-in;
+    }
+    .chart-card.zoomed {
+      transform: scale(2.5);
+      position: relative;
+      z-index: 1000;
+      cursor: zoom-out;
+    }
+    .chart-card.dimmed {
+      opacity: 0.3;
+      transform: scale(0.7);
     }
     .chart-title {
       font-size: 1.12em;
@@ -319,6 +331,26 @@
     function zoomOut() {
       zoomLevel = Math.max(0.5, zoomLevel - 0.1);
       applyZoom();
+    }
+
+    let currentZoomCard = null;
+    function zoomChart(card) {
+      const cards = document.querySelectorAll('.chart-card');
+      if (currentZoomCard === card) {
+        cards.forEach(c => c.classList.remove('zoomed', 'dimmed'));
+        currentZoomCard = null;
+        return;
+      }
+      cards.forEach(c => {
+        if (c === card) {
+          c.classList.add('zoomed');
+          c.classList.remove('dimmed');
+        } else {
+          c.classList.add('dimmed');
+          c.classList.remove('zoomed');
+        }
+      });
+      currentZoomCard = card;
     }
 
     function openPanelRecord(queueID, sourceTable, mrn, claimID) {
@@ -1217,13 +1249,17 @@
         pageLength.append(`<option value="${len}">${len}</option>`);
       });
       $('.dt-buttons').append(pageLength);
-      $('#pageLength').on('change', function() {
-        table.page.len(parseInt($(this).val())).draw();
-      });
+        $('#pageLength').on('change', function() {
+          table.page.len(parseInt($(this).val())).draw();
+        });
 
-      feather.replace();
-      applyZoom();
-    });
+        $('.chart-card').on('dblclick', function (e) {
+          zoomChart(this);
+        });
+
+        feather.replace();
+        applyZoom();
+      });
   </script>
 </body>
 </html>
