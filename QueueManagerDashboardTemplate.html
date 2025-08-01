@@ -1253,9 +1253,11 @@
           table.page.len(parseInt($(this).val())).draw();
         });
 
-        $('.chart-card').on('dblclick', function (e) {
-          zoomChart(this);
-        });
+      $('.chart-card, .chart-card canvas').on('dblclick', function(e) {
+        const card = $(this).closest('.chart-card')[0];
+        zoomChart(card);
+      });
+
 
         feather.replace();
         applyZoom();
