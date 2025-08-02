@@ -200,70 +200,70 @@
       <div class="dashboard-title">RCM Queue Dashboard</div>
       <button id="clearFilters" onclick="clearAllFilters()" style="margin-bottom:10px;">Clear All Filters</button>
       <div class="charts-grid">
-        <div class="chart-card">
+        <div class="chart-card" title="Visualizes the distribution of claims across different care units (e.g., Home Health, Hospice). Helps identify where queue volume is concentrated at the organizational level.">
           <div class="chart-title">Claims by Parent Unit</div>
           <canvas id="parentUnitChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Tracks how claims are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
           <div class="chart-title">Assigned To Distribution</div>
           <canvas id="assignedToChart"></canvas>
         </div>
-                  <div class="chart-card">
+                  <div class="chart-card" title="Reflects ownership of queues at the admin level. If a queue is assigned to an Admin, they are expected to be the primary driver of resolution, while the AssignedTo (biller) acts in a supporting role.">
             <div class="chart-title">Admin Distribution</div>
             <canvas id="adminChart"></canvas>
           </div>
           
-        <div class="chart-card">
+        <div class="chart-card" title="Shows the current processing status of claims (e.g., Billed, Denied, RFNP). Useful for quickly understanding bottlenecks and queue stages.">
           <div class="chart-title">Status Breakdown</div>
           <canvas id="statusChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card" title="Highlights why claims were returned or unpaid. Essential for RCM teams to spot recurring issues and reduce denials.">
           <div class="chart-title">RFNP Breakdown</div>
           <canvas id="rfnpChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card" title="Provides deeper insight into subcategories of non-payment causes. Helps prioritize training, process fixes, or payor escalation strategies.">
           <div class="chart-title">subRFNP Breakdown</div>
           <canvas id="subRfnpChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card" title="Displays claim counts segmented by priority levels (e.g., Low, Medium, High). Useful for assessing urgency and workload severity across the team.">
           <div class="chart-title">Priority Trend</div>
           <canvas id="priorityChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Breaks down volume by insurance payor (e.g., Medicare PPS, Kaiser, UHC). Useful for identifying key payors and monitoring high-volume relationships.">
           <div class="chart-title">Claims by Payor</div>
           <canvas id="payorChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Isolates and visualizes claims marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
           <div class="chart-title">High Priority Claims</div>
           <canvas id="highPriorityChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Flags claims where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
           <div class="chart-title">Overdue Claims</div>
           <canvas id="overdueChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card" title="Displays weekly trends in upcoming claim due dates. Useful for forecasting workload and aligning team capacity to demand.">
           <div class="chart-title">Due Date Trend</div>
           <canvas id="dueDateTrendChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Segments claims due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
           <div class="chart-title">Claims Due This Week</div>
           <canvas id="dueDateThisWeekChart"></canvas>
         </div>
-        <div class="chart-card">
+        <div class="chart-card" title="Categorizes claims by how long they’ve been in the queue, based on the number of days since QueueDate. Supports aging reports and time-to-resolution improvement.">
           <div class="chart-title">Queue Aging</div>
           <canvas id="queueAgingChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card" title="Similar to ‘Claims by Parent Unit,’ this reinforces visibility at the organizational unit level. Ensures redundancy and quick access to unit-based breakdowns.">
           <div class="chart-title">Parent Unit Distribution</div>
           <canvas id="parentUnitDistChart"></canvas>
         </div>
 
-          <div class="chart-card">
+          <div class="chart-card" title="Tracks documentation of outreach or follow-up actions associated with a queue. A high volume may indicate escalated or complex cases, and it can help monitor communication efficiency.">
             <div class="chart-title">Call Log</div>
             <canvas id="callLogChart"></canvas>
           </div>
