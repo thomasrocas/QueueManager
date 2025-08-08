@@ -187,7 +187,7 @@
     <button class="toggle-arrow" onclick="toggleSidebar()">‹</button>
 
     <h3>RCM System</h3>
-   <div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Dashboard')">📊 <span class="menu-text">Dashboard</span></div><div class="menu-item active" onclick="showDashboardPanel(this)"><i data-feather="trending-up" style="margin-right:6px;"></i><span class="menu-text">AR Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Unbilled Dashboard')"><i data-feather="clock" style="margin-right:6px;"></i><span class="menu-text">Unbilled Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Authorization')"><i data-feather="check-circle" style="margin-right:6px;"></i><span class="menu-text">Authorization</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Validation')"><i data-feather="alert-circle" style="margin-right:6px;"></i><span class="menu-text">Validation</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Claims')"><i data-feather="file-text" style="margin-right:6px;"></i><span class="menu-text">Claims</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'UnbilledAR')"><i data-feather="alert-octagon" style="margin-right:6px;"></i><span class="menu-text">UnbilledAR</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'BilledAR')"><i data-feather="dollar-sign" style="margin-right:6px;"></i><span class="menu-text">BilledAR</span></div><div class="menu-item" onclick=" FileMaker.PerformScript('OnClickRCMMenu', 'Queue Manager')"><i data-feather="shuffle" style="margin-right:6px;"></i><span class="menu-text">Queue Manager</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Settings')"><i data-feather="settings" style="margin-right:6px;"></i><span class="menu-text">Settings</span></div>
+   <div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Dashboard')">📊 <span class="menu-text">Dashboard</span></div><div class="menu-item active" onclick="showDashboardPanel(this)"><i data-feather="trending-up" style="margin-right:6px;"></i><span class="menu-text">AR Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Unbilled Dashboard')"><i data-feather="clock" style="margin-right:6px;"></i><span class="menu-text">Unbilled Dashboard</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Authorization')"><i data-feather="check-circle" style="margin-right:6px;"></i><span class="menu-text">Authorization</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Validation')"><i data-feather="alert-circle" style="margin-right:6px;"></i><span class="menu-text">Validation</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Queues')"><i data-feather="file-text" style="margin-right:6px;"></i><span class="menu-text">Queues</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'UnbilledAR')"><i data-feather="alert-octagon" style="margin-right:6px;"></i><span class="menu-text">UnbilledAR</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'BilledAR')"><i data-feather="dollar-sign" style="margin-right:6px;"></i><span class="menu-text">BilledAR</span></div><div class="menu-item" onclick=" FileMaker.PerformScript('OnClickRCMMenu', 'Queue Manager')"><i data-feather="shuffle" style="margin-right:6px;"></i><span class="menu-text">Queue Manager</span></div><div class="menu-item" onclick="FileMaker.PerformScript('OnClickRCMMenu', 'Settings')"><i data-feather="settings" style="margin-right:6px;"></i><span class="menu-text">Settings</span></div>
     </div>
 
     <!-- Optional: Add sidebar menu items here -->
@@ -200,11 +200,11 @@
       <div class="dashboard-title">RCM Queue Dashboard</div>
       <button id="clearFilters" onclick="clearAllFilters()" style="margin-bottom:10px;">Clear All Filters</button>
       <div class="charts-grid">
-        <div class="chart-card" title="Visualizes the distribution of claims across different care units (e.g., Home Health, Hospice). Helps identify where queue volume is concentrated at the organizational level.">
-          <div class="chart-title">Claims by Parent Unit</div>
+        <div class="chart-card" title="Visualizes the distribution of queues across different care units (e.g., Home Health, Hospice). Helps identify where queue volume is concentrated at the organizational level.">
+          <div class="chart-title">Queues by Parent Unit</div>
           <canvas id="parentUnitChart"></canvas>
         </div>
-        <div class="chart-card" title="Tracks how claims are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
+        <div class="chart-card" title="Tracks how queues are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
           <div class="chart-title">Assigned To Distribution</div>
           <canvas id="assignedToChart"></canvas>
         </div>
@@ -213,12 +213,12 @@
             <canvas id="adminChart"></canvas>
           </div>
           
-        <div class="chart-card" title="Shows the current processing status of claims (e.g., Billed, Denied, RFNP). Useful for quickly understanding bottlenecks and queue stages.">
+        <div class="chart-card" title="Shows the current processing status of queues (e.g., Billed, Denied, RFNP). Useful for quickly understanding bottlenecks and queue stages.">
           <div class="chart-title">Status Breakdown</div>
           <canvas id="statusChart"></canvas>
         </div>
 
-        <div class="chart-card" title="Highlights why claims were returned or unpaid. Essential for RCM teams to spot recurring issues and reduce denials.">
+        <div class="chart-card" title="Highlights why queues were returned or unpaid. Essential for RCM teams to spot recurring issues and reduce denials.">
           <div class="chart-title">RFNP Breakdown</div>
           <canvas id="rfnpChart"></canvas>
         </div>
@@ -228,37 +228,37 @@
           <canvas id="subRfnpChart"></canvas>
         </div>
 
-        <div class="chart-card" title="Displays claim counts segmented by priority levels (e.g., Low, Medium, High). Useful for assessing urgency and workload severity across the team.">
+        <div class="chart-card" title="Displays queue counts segmented by priority levels (e.g., Low, Medium, High). Useful for assessing urgency and workload severity across the team.">
           <div class="chart-title">Priority Trend</div>
           <canvas id="priorityChart"></canvas>
         </div>
         <div class="chart-card" title="Breaks down volume by insurance payor (e.g., Medicare PPS, Kaiser, UHC). Useful for identifying key payors and monitoring high-volume relationships.">
-          <div class="chart-title">Claims by Payor</div>
+          <div class="chart-title">Queues by Payor</div>
           <canvas id="payorChart"></canvas>
         </div>
-        <div class="chart-card" title="Isolates and visualizes claims marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
-          <div class="chart-title">High Priority Claims</div>
+        <div class="chart-card" title="Isolates and visualizes queues marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
+          <div class="chart-title">High Priority Queues</div>
           <canvas id="highPriorityChart"></canvas>
         </div>
-        <div class="chart-card" title="Flags claims where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
-          <div class="chart-title">Overdue Claims</div>
+        <div class="chart-card" title="Flags queues where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
+          <div class="chart-title">Overdue Queues</div>
           <canvas id="overdueChart"></canvas>
         </div>
 
-        <div class="chart-card" title="Displays weekly trends in upcoming claim due dates. Useful for forecasting workload and aligning team capacity to demand.">
+        <div class="chart-card" title="Displays weekly trends in upcoming queue due dates. Useful for forecasting workload and aligning team capacity to demand.">
           <div class="chart-title">Due Date Trend</div>
           <canvas id="dueDateTrendChart"></canvas>
         </div>
-        <div class="chart-card" title="Segments claims due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
-          <div class="chart-title">Claims Due This Week</div>
+        <div class="chart-card" title="Segments queues due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
+          <div class="chart-title">Queues Due This Week</div>
           <canvas id="dueDateThisWeekChart"></canvas>
         </div>
-        <div class="chart-card" title="Categorizes claims by how long they’ve been in the queue, based on the number of days since QueueDate. Supports aging reports and time-to-resolution improvement.">
+        <div class="chart-card" title="Categorizes queues by how long they’ve been in the queue, based on the number of days since QueueDate. Supports aging reports and time-to-resolution improvement.">
           <div class="chart-title">Queue Aging</div>
           <canvas id="queueAgingChart"></canvas>
         </div>
 
-        <div class="chart-card" title="Counts claims with UB04 or Correspondence flags for quick tracking of documentation statuses.">
+        <div class="chart-card" title="Counts queues with UB04 or Correspondence flags for quick tracking of documentation statuses.">
           <div class="chart-title">UB04 &amp; Correspondence</div>
           <canvas id="ub04CorrespondenceChart"></canvas>
         </div>
@@ -353,10 +353,10 @@
       currentZoomCard = card;
     }
 
-    function openPanelRecord(queueID, sourceTable, mrn, claimID) {
+    function openPanelRecord(queueID, sourceTable, mrn, queueID) {
       const param = JSON.stringify({
         QueueID: queueID,
-        ClaimID: claimID,
+        QueueID: queueID,
         MRN: mrn,
         SourceTable: sourceTable
       });
@@ -369,10 +369,10 @@
       }
     }
 
-    function openCallLog(queueID, sourceTable, mrn, claimID) {
+    function openCallLog(queueID, sourceTable, mrn, queueID) {
       const param = JSON.stringify({
         QueueID: queueID,
-        ClaimID: claimID,
+        QueueID: queueID,
         MRN: mrn,
         SourceTable: sourceTable
       });
@@ -386,14 +386,14 @@
     }
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
     const rawData = [
-  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1", "ClaimID":"106851_75349_250521250618","DueDate":"8/25/2025","Event Date":"5/21/2025 - 6/18/2025","MRN":"1068514","Parent Unit":"Home Health","Patient":"Warren, Sy","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:14 AM","QueueID":"A824C9E5-092B-CD45-8A04-FA657A9F1CC3","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":"1"},
-  {"Admin":"","AssignedTo":"Karen Torres","Call Log":"1","ClaimID":"109310_76578_250530250627","DueDate":"7/4/2025","Event Date":"5/30/2025 - 6/27/2025","MRN":"1093105","Parent Unit":"Home Health","Patient":"Crivello, qu F.","Payor Name":"Medicare PPS","Priority":"High","QueueDate":"7/30/2025 7:47:14 AM","QueueID":"15DA04FC-7F35-F941-98A0-7F61A3E94A31","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"1","UB04":""},
-  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","ClaimID":"109258_76640_250501250528","DueDate":"8/1/2025","Event Date":"5/1/2025 - 5/28/2025","MRN":"1092583","Parent Unit":"Home Health","Patient":"Zuniga, ar A.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:15 AM","QueueID":"8EB650BF-267E-AD41-B3B8-E68EEAE50010","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
-  {"Admin":"","AssignedTo":"Von Lumanog","Call Log":"1","ClaimID":"106851_75349_250521250618","DueDate":"6/3/2025","Event Date":"5/21/2025 - 6/18/2025","MRN":"1068514","Parent Unit":"Home Health","Patient":"Warren, as","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:48 AM","QueueID":"82DCFC4D-10B3-A24D-90D8-70BA8DF848C5","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"1","UB04":""},
-  {"Admin":"","AssignedTo":"Lisa Mangubat","Call Log":"1","ClaimID":"109310_76578_250530250627","DueDate":"8/5/2025","Event Date":"5/30/2025 - 6/27/2025","MRN":"1093102","Parent Unit":"Home Health","Patient":"Crivello, gdf F.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:49 AM","QueueID":"0007F76E-398C-CB4E-AF42-1020C895F61C","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":"1"},
-  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","ClaimID":"109258_76640_250501250528","DueDate":"8/25/2025","Event Date":"5/1/2025 - 5/28/2025","MRN":"1092581","Parent Unit":"Home Health","Patient":"Zuniga, sd A.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:49 AM","QueueID":"80085768-C33D-3E44-A6B0-15FC2BF56EFB","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
-  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","ClaimID":"110046_76583_250602250630","DueDate":"7/24/2025","Event Date":"6/2/2025 - 6/30/2025","MRN":"1100462","Parent Unit":"Home Health","Patient":"McCauley, fer E.","Payor Name":"Medicare PPS","Priority":"High","QueueDate":"7/30/2025 7:47:50 AM","QueueID":"C82B2E31-6884-144D-824C-0DEFDCCE8825","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
-  {"Admin":"","AssignedTo":"Faye Dominguez","Call Log":"1","ClaimID":"111796_76591_250623250721","DueDate":"8/25/2025","Event Date":"6/23/2025 - 7/21/2025","MRN":"1117962","Parent Unit":"Home Health","Patient":"Hunsg, as C.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:50 AM","QueueID":"EE84F3CA-1D3C-A742-8E7E-BD7070F3D7E4","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""}
+  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1", "QueueID":"106851_75349_250521250618","DueDate":"8/25/2025","Event Date":"5/21/2025 - 6/18/2025","MRN":"1068514","Parent Unit":"Home Health","Patient":"Warren, Sy","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:14 AM","QueueID":"A824C9E5-092B-CD45-8A04-FA657A9F1CC3","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":"1"},
+  {"Admin":"","AssignedTo":"Karen Torres","Call Log":"1","QueueID":"109310_76578_250530250627","DueDate":"7/4/2025","Event Date":"5/30/2025 - 6/27/2025","MRN":"1093105","Parent Unit":"Home Health","Patient":"Crivello, qu F.","Payor Name":"Medicare PPS","Priority":"High","QueueDate":"7/30/2025 7:47:14 AM","QueueID":"15DA04FC-7F35-F941-98A0-7F61A3E94A31","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"1","UB04":""},
+  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","QueueID":"109258_76640_250501250528","DueDate":"8/1/2025","Event Date":"5/1/2025 - 5/28/2025","MRN":"1092583","Parent Unit":"Home Health","Patient":"Zuniga, ar A.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:15 AM","QueueID":"8EB650BF-267E-AD41-B3B8-E68EEAE50010","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
+  {"Admin":"","AssignedTo":"Von Lumanog","Call Log":"1","QueueID":"106851_75349_250521250618","DueDate":"6/3/2025","Event Date":"5/21/2025 - 6/18/2025","MRN":"1068514","Parent Unit":"Home Health","Patient":"Warren, as","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:48 AM","QueueID":"82DCFC4D-10B3-A24D-90D8-70BA8DF848C5","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"1","UB04":""},
+  {"Admin":"","AssignedTo":"Lisa Mangubat","Call Log":"1","QueueID":"109310_76578_250530250627","DueDate":"8/5/2025","Event Date":"5/30/2025 - 6/27/2025","MRN":"1093102","Parent Unit":"Home Health","Patient":"Crivello, gdf F.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:49 AM","QueueID":"0007F76E-398C-CB4E-AF42-1020C895F61C","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":"1"},
+  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","QueueID":"109258_76640_250501250528","DueDate":"8/25/2025","Event Date":"5/1/2025 - 5/28/2025","MRN":"1092581","Parent Unit":"Home Health","Patient":"Zuniga, sd A.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:49 AM","QueueID":"80085768-C33D-3E44-A6B0-15FC2BF56EFB","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
+  {"Admin":"","AssignedTo":"Cristina Del Rosario","Call Log":"1","QueueID":"110046_76583_250602250630","DueDate":"7/24/2025","Event Date":"6/2/2025 - 6/30/2025","MRN":"1100462","Parent Unit":"Home Health","Patient":"McCauley, fer E.","Payor Name":"Medicare PPS","Priority":"High","QueueDate":"7/30/2025 7:47:50 AM","QueueID":"C82B2E31-6884-144D-824C-0DEFDCCE8825","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""},
+  {"Admin":"","AssignedTo":"Faye Dominguez","Call Log":"1","QueueID":"111796_76591_250623250721","DueDate":"8/25/2025","Event Date":"6/23/2025 - 7/21/2025","MRN":"1117962","Parent Unit":"Home Health","Patient":"Hunsg, as C.","Payor Name":"Medicare PPS","Priority":"Low","QueueDate":"7/30/2025 7:47:50 AM","QueueID":"EE84F3CA-1D3C-A742-8E7E-BD7070F3D7E4","RFNP":"","SourceTable":"BilledAR","Status":"Billed","subRFNP":"","Correspondence":"","UB04":""}
 
 ];
     let currentFilter = {};
@@ -662,8 +662,8 @@
         d.Admin || "",
         d.DueDate || "",
         d["Event Date"] || "",
-        `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">View</button>` +
-        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.ClaimID}')">Call Log</button>` : "")
+        `<button class="view-btn" onclick="openPanelRecord('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.QueueID}')">View</button>` +
+        (d["Call Log"] == "1" ? ` <button class="call-log-btn" onclick="openCallLog('${d.QueueID}','${d.SourceTable}','${d.MRN}','${d.QueueID}')">Call Log</button>` : "")
       ]);
       if (table) {
         table.clear().rows.add(rows).draw();
@@ -824,7 +824,7 @@
         data: {
           labels: aData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: aData.values,
             backgroundColor: 'rgba(0, 123, 255, 0.6)'
           }]
@@ -852,7 +852,7 @@
         data: {
           labels: sData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: sData.values,
             backgroundColor: [
               '#0d6efd', '#6c757d', '#198754', '#ffc107', '#dc3545', '#adb5bd'
@@ -881,7 +881,7 @@
         data: {
           labels: pData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: pData.values,
             backgroundColor: 'rgba(253, 126, 20, 0.7)'
           }]
@@ -909,7 +909,7 @@
         data: {
           labels: payData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: payData.values,
             backgroundColor: [
               '#007bff','#6610f2','#6f42c1','#d63384','#fd7e14','#ffc107','#28a745','#20c997'
@@ -977,7 +977,7 @@
         data: {
           labels: odData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: odData.values,
             backgroundColor: ['#dc3545', '#ffc107']
           }]
@@ -1002,7 +1002,7 @@
         data: {
           labels: puData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: puData.values,
             backgroundColor: 'rgba(40, 167, 69, 0.6)'
           }]
@@ -1029,7 +1029,7 @@
         data: {
           labels: trendData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: trendData.values,
             fill: false,
             borderColor: '#007bff'
@@ -1056,7 +1056,7 @@
         data: {
           labels: weekData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: weekData.values,
             backgroundColor: 'rgba(23, 162, 184, 0.6)'
           }]
@@ -1082,7 +1082,7 @@
         data: {
           labels: agingData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: agingData.values,
             backgroundColor: 'rgba(108, 117, 125, 0.6)'
           }]
@@ -1108,7 +1108,7 @@
         data: {
           labels: rfData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: rfData.values,
             backgroundColor: 'rgba(255, 159, 64, 0.6)'
           }]
@@ -1135,7 +1135,7 @@
         data: {
           labels: subData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: subData.values,
             backgroundColor: 'rgba(111, 66, 193, 0.6)'
           }]
@@ -1162,7 +1162,7 @@
         data: {
           labels: ubData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: ubData.values,
             backgroundColor: [
               'rgba(40, 167, 69, 0.6)',
@@ -1199,7 +1199,7 @@
         data: {
           labels: adData.labels,
           datasets: [{
-            label: '# Claims',
+            label: '# Queues',
             data: adData.values,
             backgroundColor: 'rgba(0, 123, 255, 0.6)'
           }]
