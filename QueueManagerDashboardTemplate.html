@@ -262,12 +262,7 @@
           <div class="chart-title">UB04 &amp; Correspondence</div>
           <canvas id="ub04CorrespondenceChart"></canvas>
         </div>
-
-          <div class="chart-card" title="Tracks documentation of outreach or follow-up actions associated with a queue. A high volume may indicate escalated or complex cases, and it can help monitor communication efficiency.">
-            <div class="chart-title">Call Log</div>
-            <canvas id="callLogChart"></canvas>
-          </div>
-        </div>
+      </div>
       <div id="data-table">
         <div class="filter-label">Details Table (Filtered):</div>
         <table>
@@ -473,17 +468,6 @@
           values: Object.values(count)
         };
       }
-      function callLogData(data) {
-        let count = {};
-        data.forEach(d => {
-          let key = d["Call Log"] ? d["Call Log"] : '(None)';
-          count[key] = (count[key] || 0) + 1;
-        });
-        return {
-          labels: Object.keys(count),
-          values: Object.values(count)
-        };
-      }
       function highPriorityByAssignedTo(data) {
       let count = {};
       data.forEach(d => {
@@ -534,13 +518,15 @@
     function ub04CorrespondenceData(data) {
       let ub04Count = 0;
       let corrCount = 0;
+      let callLogCount = 0;
       data.forEach(d => {
         if (d["UB04"]) ub04Count++;
         if (d["Correspondence"]) corrCount++;
+        if (d["Call Log"]) callLogCount++;
       });
       return {
-        labels: ["UB04", "Correspondence"],
-        values: [ub04Count, corrCount]
+        labels: ["UB04", "Correspondence", "Call Log"],
+        values: [ub04Count, corrCount, callLogCount]
       };
     }
 
@@ -786,7 +772,8 @@
         null,
         (lbl) =>
           (lbl === "UB04" && currentFilter.UB04 === "1") ||
-          (lbl === "Correspondence" && currentFilter.Correspondence === "1")
+          (lbl === "Correspondence" && currentFilter.Correspondence === "1") ||
+          (lbl === "Call Log" && currentFilter["Call Log"] === "1")
       );
       ub04CorrespondenceChart.update();
 
@@ -795,12 +782,6 @@
       adminChart.data.datasets[0].data = adData.values;
       setChartColors(adminChart, 'Admin');
       adminChart.update();
-
-      let clData = callLogData(data);
-      callLogChart.data.labels = clData.labels;
-      callLogChart.data.datasets[0].data = clData.values;
-      setChartColors(callLogChart, 'Call Log');
-      callLogChart.update();
       renderTable(data);
     }
 
@@ -808,7 +789,6 @@
           highPriorityChart, overdueChart, parentUnitChart,
           dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
           rfnpChart, subRfnpChart, ub04CorrespondenceChart, adminChart,
-          callLogChart,
           table;
     $(function() {
       feather.replace();
@@ -1160,7 +1140,8 @@
             data: ubData.values,
             backgroundColor: [
               'rgba(40, 167, 69, 0.6)',
-              'rgba(0, 123, 255, 0.6)'
+              'rgba(0, 123, 255, 0.6)',
+              'rgba(100, 181, 246, 0.6)'
             ]
           }]
         },
@@ -1172,6 +1153,8 @@
                 toggleFilter('UB04', '1');
               } else if(label === "Correspondence") {
                 toggleFilter('Correspondence', '1');
+              } else if(label === "Call Log") {
+                toggleFilter('Call Log', '1');
               }
             }
             updateAllCharts();
@@ -1184,7 +1167,8 @@
       });
       ub04CorrespondenceChart.data.datasets[0].baseColor = [
         'rgba(40, 167, 69, 0.6)',
-        'rgba(0, 123, 255, 0.6)'
+        'rgba(0, 123, 255, 0.6)',
+        'rgba(100, 181, 246, 0.6)'
       ];
 
       let adData = adminData(rawData);
@@ -1212,31 +1196,6 @@
         }
       });
         adminChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
-
-        let clData = callLogData(rawData);
-        callLogChart = new Chart($("#callLogChart"), {
-          type: 'doughnut',
-          data: {
-            labels: clData.labels,
-            datasets: [{
-              label: '# Entries',
-              data: clData.values,
-              backgroundColor: 'rgba(100, 181, 246, 0.6)'
-            }]
-          },
-          options: {
-            onClick: function(e, items) {
-              if(items.length) {
-                const label = this.data.labels[items[0].index];
-                toggleFilter('Call Log', label === "(None)" ? "" : label);
-              }
-              updateAllCharts();
-            },
-            plugins: { legend: { position: 'bottom' } },
-            cutout: '65%'
-          }
-        });
-        callLogChart.data.datasets[0].baseColor = 'rgba(100, 181, 246, 0.6)';
 
         renderTable(rawData);
       table = $('#data-table table').DataTable({
