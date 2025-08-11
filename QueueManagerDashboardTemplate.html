@@ -487,19 +487,33 @@
     }
 
     function setChartColors(chart, field, condition) {
-      const ds = chart.data.datasets[0];
-      const labels = chart.data.labels;
-      const base = ds.baseColor;
       const highlight = 'rgba(255,99,132,0.9)';
       if(chart.config.type === 'line') {
-        ds.pointBackgroundColor = labels.map((lbl, idx) => {
-          const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
-          if(match) return highlight;
-          if(Array.isArray(base)) return base[idx % base.length];
-          return base;
+        chart.data.datasets.forEach(ds => {
+          const base = ds.baseColor;
+          ds.pointBackgroundColor = chart.data.labels.map((lbl, idx) => {
+            const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
+            if(match) return highlight;
+            if(Array.isArray(base)) return base[idx % base.length];
+            return base;
+          });
         });
         return;
       }
+      const ds = chart.data.datasets[0];
+      const base = ds.baseColor;
+      if(chart.config.type === 'bubble') {
+        ds.backgroundColor = ds.data.map((pt, idx) => {
+          const match = condition ? condition(pt) : false;
+          if(Array.isArray(base)) {
+            const color = base[idx % base.length];
+            return match ? highlight : color;
+          }
+          return match ? highlight : base;
+        });
+        return;
+      }
+      const labels = chart.data.labels;
       ds.backgroundColor = labels.map((lbl, idx) => {
         const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
         if(Array.isArray(base)) {
@@ -854,6 +868,18 @@
             else if (diff <= 60) bucket = '31-60';
             else bucket = '60+';
             return bucket === value;
+          } else if (field === 'LogUser') {
+            return d.Related && Array.isArray(d.Related.LOG) && d.Related.LOG.some(l => (l.User || '(Unknown)') === value);
+          } else if (field === 'LogDate') {
+            return d.Related && Array.isArray(d.Related.LOG) && d.Related.LOG.some(l => normalizeDate(l.Date) === value);
+          } else if (field === 'LogTable') {
+            return d.Related && Array.isArray(d.Related.LOG) && d.Related.LOG.some(l => (l.Table || '(Unknown)') === value);
+          } else if (field === 'LogUserType') {
+            return d.Related && Array.isArray(d.Related.LOG) && d.Related.LOG.some(l => {
+              const user = l.User || '(Unknown)';
+              const type = l.Type || '(Unknown)';
+              return user + '|' + type === value;
+            });
           } else {
             return (d[field] || '') === value;
           }
@@ -867,22 +893,34 @@
       let leuData = logsEditsByUser(logs);
       logsEditsByUserChart.data.labels = leuData.labels;
       logsEditsByUserChart.data.datasets[0].data = leuData.values;
-      setChartColors(logsEditsByUserChart, null);
+      setChartColors(logsEditsByUserChart, 'LogUser');
       logsEditsByUserChart.update();
       let lneData = logsNewVsEditByDay(logs);
       logsNewVsEditChart.data.labels = lneData.labels;
       logsNewVsEditChart.data.datasets[0].data = lneData.newValues;
       logsNewVsEditChart.data.datasets[1].data = lneData.editValues;
+      setChartColors(logsNewVsEditChart, 'LogDate');
       logsNewVsEditChart.update();
       let lctData = logsChangesByTable(logs);
       logsChangesByTableChart.data.labels = lctData.labels;
       logsChangesByTableChart.data.datasets[0].data = lctData.values;
-      setChartColors(logsChangesByTableChart, null);
+      setChartColors(logsChangesByTableChart, 'LogTable');
       logsChangesByTableChart.update();
       let lhmData = logsUserTypeMatrix(logs);
       logsUserTypeHeatmapChart.data.datasets[0].data = lhmData.data;
       logsUserTypeHeatmapChart.options.scales.x.ticks.callback = value => lhmData.users[value];
       logsUserTypeHeatmapChart.options.scales.y.ticks.callback = value => lhmData.types[value];
+      logsUserTypeHeatmapChart.userLabels = lhmData.users;
+      logsUserTypeHeatmapChart.typeLabels = lhmData.types;
+      setChartColors(
+        logsUserTypeHeatmapChart,
+        null,
+        pt => {
+          const user = lhmData.users[pt.x];
+          const type = lhmData.types[pt.y];
+          return currentFilter.LogUserType !== undefined && currentFilter.LogUserType === user + '|' + type;
+        }
+      );
       logsUserTypeHeatmapChart.update();
       let aData = assignedToData(data);
       assignedToChart.data.labels = aData.labels;
@@ -1429,13 +1467,20 @@
             }]
           },
           options: {
+            onClick: function(e, items) {
+              if(items.length) {
+                const label = this.data.labels[items[0].index];
+                toggleFilter('LogUser', label);
+              }
+              updateAllCharts();
+            },
             plugins: { legend: { display: false } },
             responsive: true,
             scales: { y: { beginAtZero: true } }
           }
         });
         logsEditsByUserChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
-        setChartColors(logsEditsByUserChart, null);
+        setChartColors(logsEditsByUserChart, 'LogUser');
 
         let lneData = logsNewVsEditByDay(logs);
         logsNewVsEditChart = new Chart($("#logsNewVsEditChart"), {
@@ -1460,6 +1505,13 @@
             ]
           },
           options: {
+            onClick: function(e, items) {
+              if(items.length) {
+                const label = this.data.labels[items[0].index];
+                toggleFilter('LogDate', label);
+              }
+              updateAllCharts();
+            },
             plugins: { legend: { display: true } },
             responsive: true,
             scales: { y: { beginAtZero: true } }
@@ -1467,6 +1519,7 @@
         });
         logsNewVsEditChart.data.datasets[0].baseColor = 'rgba(40, 167, 69, 0.7)';
         logsNewVsEditChart.data.datasets[1].baseColor = 'rgba(220, 53, 69, 0.7)';
+        setChartColors(logsNewVsEditChart, 'LogDate');
 
         let lctData = logsChangesByTable(logs);
         logsChangesByTableChart = new Chart($("#logsChangesByTableChart"), {
@@ -1480,13 +1533,20 @@
             }]
           },
           options: {
+            onClick: function(e, items) {
+              if(items.length) {
+                const label = this.data.labels[items[0].index];
+                toggleFilter('LogTable', label);
+              }
+              updateAllCharts();
+            },
             plugins: { legend: { display: false } },
             responsive: true,
             scales: { y: { beginAtZero: true } }
           }
         });
         logsChangesByTableChart.data.datasets[0].baseColor = 'rgba(255, 193, 7, 0.6)';
-        setChartColors(logsChangesByTableChart, null);
+        setChartColors(logsChangesByTableChart, 'LogTable');
 
         let lhmData = logsUserTypeMatrix(logs);
         logsUserTypeHeatmapChart = new Chart($("#logsUserTypeHeatmapChart"), {
@@ -1499,6 +1559,16 @@
             }]
           },
           options: {
+            onClick: function(e, elements) {
+              if(elements.length) {
+                const el = elements[0];
+                const pt = this.data.datasets[el.datasetIndex].data[el.index];
+                const user = this.userLabels[pt.x];
+                const type = this.typeLabels[pt.y];
+                toggleFilter('LogUserType', user + '|' + type);
+              }
+              updateAllCharts();
+            },
             plugins: { legend: { display: false } },
             responsive: true,
             scales: {
@@ -1514,6 +1584,9 @@
           }
         });
         logsUserTypeHeatmapChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
+        logsUserTypeHeatmapChart.userLabels = lhmData.users;
+        logsUserTypeHeatmapChart.typeLabels = lhmData.types;
+        setChartColors(logsUserTypeHeatmapChart, null, () => false);
 
         renderTable(rawData);
       table = $('#data-table table').DataTable({
