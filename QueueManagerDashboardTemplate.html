@@ -208,6 +208,16 @@
     }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
+
+    .week-toolbar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .week-toolbar button {
+      padding: 2px 6px;
+    }
   </style>
 </head>
 <body>
@@ -312,8 +322,14 @@
             </div>
             <div class="chart-card" data-chart="dueDateThisWeek" title="Segments Queues due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
               <div class="chart-title">Queues Due This Week</div>
+              <div class="week-toolbar">
+                <button id="prevWeekBtn">Prev</button>
+                <button id="thisWeekBtn">This Week</button>
+                <button id="nextWeekBtn">Next</button>
+                <span id="weekLabel"></span>
+              </div>
               <canvas id="dueDateThisWeekChart"></canvas>
-            </div>
+              </div>
           </div>
         </div>
 
@@ -470,8 +486,15 @@
  {"Admin":"","AssignedTo":"Ann Miranda","Call Log":"","ClaimID":"110702_76973_250721250724","Correspondence":"","DueDate":"8/18/2025","Event Date":"7/21/2025 - 7/24/2025","MRN":"11045645702","Parent Unit":"Home Health","Patient":"Leushtrng, Vinchrtent","Payor Name":"HPSM Care Advantage","Priority":"Low","QueueDate":"8/8/2025 4:59:30 PM","QueueID":"4E3BEEA3-AC1D-484F-A848-F1B2DDFCC592","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"annmiranda@anxlife.com"}]},"SourceTable":"BilledAR","Status":"Billed","UB04":"","subRFNP":""},
 {"Admin":"","AssignedTo":"Ann Miranda","Call Log":"","ClaimID":"104604_76947_250730250730","Correspondence":"","DueDate":"8/18/2025","Event Date":"7/30/2025 - 7/30/2025","MRN":"1044565604","Parent Unit":"Home Health","Patient":"Cashstrtro, Yadthira","Payor Name":"HPSM Care Advantage","Priority":"Low","QueueDate":"8/8/2025 4:59:30 PM","QueueID":"B60BB9EA-A226-4944-892C-F9476C0D951F","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"annmiranda@anxlife.com"}]},"SourceTable":"BilledAR","Status":"Billed","UB04":"","subRFNP":""},
 {"Admin":"","AssignedTo":"Johann Castaneda","Call Log":"","ClaimID":"400452_250625","Correspondence":"","DueDate":"8/22/2025","Event Date":"6/29/2025","MRN":"4004565452","Parent Unit":"Hospice","Patient":"T, Curghc B.","Payor Name":"SCFHP Room and Board","Priority":"Low","QueueDate":"8/8/2025 5:23:50 PM","QueueID":"FB4E556A-9407-C048-AC6E-E5A2E45E9DAE","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"johanncastaneda@anxlife.com"}]},"SourceTable":"Claims","Status":"Sequential Billing","UB04":"","subRFNP":""}
-];
+  ];
     let currentFilter = {};
+    let currentWeekStart = (() => {
+      let today = new Date();
+      let start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      start.setHours(0,0,0,0);
+      return start;
+    })();
 
     function toggleFilter(field, value) {
       if(currentFilter[field] === value) {
@@ -755,19 +778,17 @@
         values: Object.values(count)
       };
     }
-    function dueDateThisWeekData(data) {
-      let today = new Date();
-      let startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      startOfWeek.setHours(0,0,0,0);
-      let endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
+    function dueDateThisWeekData(data, startOfWeek) {
+      let start = new Date(startOfWeek);
+      start.setHours(0,0,0,0);
+      let endOfWeek = new Date(start);
+      endOfWeek.setDate(start.getDate() + 6);
       let days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       let count = { Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0 };
       data.forEach(d => {
         let due = new Date(d.DueDate);
         if (isNaN(due)) return;
-        if (due >= startOfWeek && due <= endOfWeek) {
+        if (due >= start && due <= endOfWeek) {
           let label = days[due.getDay()];
           count[label] = (count[label] || 0) + 1;
         }
@@ -804,6 +825,17 @@
       let days = Math.floor((date - firstDay) / 86400000);
       let week = Math.ceil((days + firstDay.getDay() + 1) / 7);
       return `${year}-W${week}`;
+    }
+    function updateWeekLabel() {
+      const start = new Date(currentWeekStart);
+      const end = new Date(currentWeekStart);
+      end.setDate(start.getDate() + 6);
+      const opts = { month: 'short', day: 'numeric' };
+      const startStr = start.toLocaleDateString(undefined, opts);
+      const endStr = end.toLocaleDateString(undefined, opts);
+      const label = `${startStr} \u2013 ${endStr}, ${end.getFullYear()}`;
+      const el = document.getElementById('weekLabel');
+      if (el) el.textContent = label;
     }
     function renderTable(data) {
       const rows = data.map(d => [
@@ -845,6 +877,13 @@
             if (value === 'overdue') return due < today;
             if (value === 'due this week') return due >= startOfWeek && due <= endOfWeek;
             return false;
+          } else if (field === 'DueDateRange') {
+            let due = new Date(d.DueDate);
+            if (isNaN(due)) return false;
+            let start = new Date(value.start);
+            let end = new Date(value.end);
+            end.setHours(23,59,59,999);
+            return due >= start && due <= end;
           } else if (field === 'DueDateWeek') {
             let due = new Date(d.DueDate);
             if (isNaN(due)) return false;
@@ -886,6 +925,30 @@
         });
       });
       return data;
+    }
+    function loadWeekData() {
+      const start = new Date(currentWeekStart);
+      const end = new Date(currentWeekStart);
+      end.setDate(start.getDate() + 6);
+      const startStr = start.toISOString().split('T')[0];
+      const endStr = end.toISOString().split('T')[0];
+      let weekData = rawData;
+      if (window.FileMaker && window.FileMaker.PerformScript) {
+        const result = window.FileMaker.PerformScript('LoadQueuesForWeek', `${startStr}|${endStr}`);
+        if (result) {
+          try { rawData = JSON.parse(result); weekData = rawData; } catch(e) {}
+        }
+      } else {
+        weekData = rawData.filter(d => {
+          let due = new Date(d.DueDate);
+          if (isNaN(due)) return false;
+          return due >= start && due <= end;
+        });
+      }
+      currentFilter['DueDateRange'] = { start: startStr, end: endStr };
+      updateWeekLabel();
+      updateAllCharts();
+      return weekData;
     }
     function updateAllCharts() {
       let data = filterData();
@@ -963,9 +1026,9 @@
       dueDateTrendChart.data.datasets[0].data = trendData.values;
       setChartColors(dueDateTrendChart, 'DueDateWeek');
       dueDateTrendChart.update();
-      let weekData = dueDateThisWeekData(data);
-      dueDateThisWeekChart.data.labels = weekData.labels;
-      dueDateThisWeekChart.data.datasets[0].data = weekData.values;
+        let weekData = dueDateThisWeekData(data, currentWeekStart);
+        dueDateThisWeekChart.data.labels = weekData.labels;
+        dueDateThisWeekChart.data.datasets[0].data = weekData.values;
       setChartColors(dueDateThisWeekChart, 'DueDateDay');
       dueDateThisWeekChart.update();
       let agingData = queueAgingData(data);
@@ -1280,8 +1343,8 @@
       });
       dueDateTrendChart.data.datasets[0].baseColor = '#007bff';
 
-      let weekData = dueDateThisWeekData(rawData);
-      dueDateThisWeekChart = new Chart($("#dueDateThisWeekChart"), {
+        let weekData = dueDateThisWeekData(rawData, currentWeekStart);
+        dueDateThisWeekChart = new Chart($("#dueDateThisWeekChart"), {
         type: 'bar',
         data: {
           labels: weekData.labels,
@@ -1304,9 +1367,24 @@
           scales: { y: { beginAtZero: true } }
         }
       });
-      dueDateThisWeekChart.data.datasets[0].baseColor = 'rgba(23, 162, 184, 0.6)';
+        dueDateThisWeekChart.data.datasets[0].baseColor = 'rgba(23, 162, 184, 0.6)';
+        $('#prevWeekBtn').on('click', function() {
+          currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+          loadWeekData();
+        });
+        $('#nextWeekBtn').on('click', function() {
+          currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+          loadWeekData();
+        });
+        $('#thisWeekBtn').on('click', function() {
+          let today = new Date();
+          currentWeekStart = new Date(today);
+          currentWeekStart.setDate(today.getDate() - today.getDay());
+          currentWeekStart.setHours(0,0,0,0);
+          loadWeekData();
+        });
 
-      let agingData = queueAgingData(rawData);
+        let agingData = queueAgingData(rawData);
       queueAgingChart = new Chart($("#queueAgingChart"), {
         type: 'bar', // histogram representation
         data: {
@@ -1614,12 +1692,12 @@
           table.page.len(parseInt($(this).val())).draw();
         });
 
-      $('.chart-card, .chart-card canvas').on('dblclick', function(e) {
-        const card = $(this).closest('.chart-card')[0];
-        zoomChart(card);
-      });
+        $('.chart-card, .chart-card canvas').on('dblclick', function(e) {
+          const card = $(this).closest('.chart-card')[0];
+          zoomChart(card);
+        });
 
-
+        loadWeekData();
         feather.replace();
         applyZoom();
       });
