@@ -125,9 +125,12 @@
       color: #007bff;
       font-weight: 500;
     }
+    #chartDropdown {
+      margin: 0;
+    }
     #chartOptions {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 8px;
     }
     .right-panel-toggle {
@@ -150,7 +153,7 @@
       position: fixed;
       top: 0;
       right: -400px;
-      width: 200px;
+      width: 250px;
       height: 100%;
       background: white;
       box-shadow: -2px 0 10px rgba(0,0,0,0.1);
@@ -230,12 +233,6 @@
         <li class="nav-item"><a class="nav-link" href="#tab-trends">Trends</a></li>
         <li class="nav-item"><a class="nav-link" href="#tab-activity">Activity Logs</a></li>
       </ul>
-
-      <details id="chartDropdown" style="margin:10px 0;">
-        <summary>Show/Hide Charts</summary>
-        <div id="chartOptions"></div>
-      </details>
-
       <div class="tab-content">
         <div id="tab-overview" class="tab-pane active">
           <details open>
@@ -356,12 +353,10 @@
   <div class="right-panel-toggle" onclick="toggleRightPanel()">❯</div>
   <!-- Right Sidebar Panel -->
   <div class="right-panel" id="rightPanel">
-    <h2>Right Panel</h2>
-    <p>
-      This right panel matches your SettingsTemplate.<br>
-      You can place any content here (settings, logs, etc).<br>
-      Edit the <code>#rightPanel</code> div as needed!
-    </p>
+    <details id="chartDropdown">
+      <summary>Show/Hide Charts</summary>
+      <div id="chartOptions"></div>
+    </details>
   </div>
 
   <script>
@@ -881,7 +876,6 @@
         label.appendChild(cb);
         label.appendChild(document.createTextNode(' ' + title));
         container.appendChild(label);
-        container.appendChild(document.createElement('br'));
 
         card.style.display = cb.checked ? '' : 'none';
       });
