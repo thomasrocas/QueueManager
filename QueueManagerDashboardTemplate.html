@@ -125,6 +125,11 @@
       color: #007bff;
       font-weight: 500;
     }
+    #chartOptions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
     .right-panel-toggle {
       position: fixed;
       top: 50%;
@@ -870,10 +875,10 @@
           save();
         });
         const label = document.createElement('label');
+        label.style.display = 'inline-flex';
         label.appendChild(cb);
         label.appendChild(document.createTextNode(' ' + title));
         container.appendChild(label);
-        container.appendChild(document.createElement('br'));
         card.style.display = cb.checked ? '' : 'none';
       });
       function save() {
