@@ -319,7 +319,22 @@
 
         <div id="tab-activity" class="tab-pane">
           <div class="charts-grid">
-            <!-- Future LOG charts -->
+            <div class="chart-card" data-chart="logsEditsByUser">
+              <div class="chart-title">Edits by User</div>
+              <canvas id="logsEditsByUserChart"></canvas>
+            </div>
+            <div class="chart-card" data-chart="logsNewVsEdit">
+              <div class="chart-title">New vs Edit by Day</div>
+              <canvas id="logsNewVsEditChart"></canvas>
+            </div>
+            <div class="chart-card" data-chart="logsChangesByTable">
+              <div class="chart-title">Changes by Table</div>
+              <canvas id="logsChangesByTableChart"></canvas>
+            </div>
+            <div class="chart-card" data-chart="logsUserTypeHeatmap">
+              <div class="chart-title">User vs Type Heatmap</div>
+              <canvas id="logsUserTypeHeatmapChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -493,6 +508,83 @@
         }
         return match ? highlight : base;
       });
+    }
+
+    function normalizeDate(str) {
+      if(!str) return '';
+      if(str.includes('/')) {
+        const [m, d, y] = str.split('/');
+        return `${y.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+      }
+      if(str.includes('-')) {
+        const [y, m, d] = str.split('-');
+        if(y.length === 4) return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+      }
+      return str;
+    }
+
+    function extractLogsFromData(data) {
+      const logs = [];
+      data.forEach(rec => {
+        if(rec.Related && Array.isArray(rec.Related.LOG)) {
+          rec.Related.LOG.forEach(log => {
+            logs.push({ ...log, Date: normalizeDate(log.Date) });
+          });
+        }
+      });
+      return logs;
+    }
+
+    function logsEditsByUser(logs) {
+      const count = {};
+      logs.filter(l => l.Type === 'Edit').forEach(l => {
+        const user = l.User || '(Unknown)';
+        count[user] = (count[user] || 0) + 1;
+      });
+      return { labels: Object.keys(count), values: Object.values(count) };
+    }
+
+    function logsNewVsEditByDay(logs) {
+      const map = {};
+      logs.forEach(l => {
+        const date = l.Date;
+        if(!date) return;
+        if(!map[date]) map[date] = { New: 0, Edit: 0 };
+        if(l.Type === 'New') map[date].New++;
+        else if(l.Type === 'Edit') map[date].Edit++;
+      });
+      const labels = Object.keys(map).sort();
+      return {
+        labels,
+        newValues: labels.map(d => map[d].New),
+        editValues: labels.map(d => map[d].Edit)
+      };
+    }
+
+    function logsChangesByTable(logs) {
+      const count = {};
+      logs.forEach(l => {
+        const table = l.Table || '(Unknown)';
+        count[table] = (count[table] || 0) + 1;
+      });
+      return { labels: Object.keys(count), values: Object.values(count) };
+    }
+
+    function logsUserTypeMatrix(logs) {
+      const users = Array.from(new Set(logs.map(l => l.User || '(Unknown)')));
+      const types = Array.from(new Set(logs.map(l => l.Type || '(Unknown)')));
+      const combo = {};
+      logs.forEach(l => {
+        const user = l.User || '(Unknown)';
+        const type = l.Type || '(Unknown)';
+        const key = user + '|' + type;
+        combo[key] = (combo[key] || 0) + 1;
+      });
+      const dataPoints = Object.entries(combo).map(([key, count]) => {
+        const [user, type] = key.split('|');
+        return { x: users.indexOf(user), y: types.indexOf(type), r: Math.max(5, count * 3) };
+      });
+      return { users, types, data: dataPoints };
     }
 
     function assignedToData(data) {
@@ -771,6 +863,27 @@
     }
     function updateAllCharts() {
       let data = filterData();
+      let logs = extractLogsFromData(data);
+      let leuData = logsEditsByUser(logs);
+      logsEditsByUserChart.data.labels = leuData.labels;
+      logsEditsByUserChart.data.datasets[0].data = leuData.values;
+      setChartColors(logsEditsByUserChart, null);
+      logsEditsByUserChart.update();
+      let lneData = logsNewVsEditByDay(logs);
+      logsNewVsEditChart.data.labels = lneData.labels;
+      logsNewVsEditChart.data.datasets[0].data = lneData.newValues;
+      logsNewVsEditChart.data.datasets[1].data = lneData.editValues;
+      logsNewVsEditChart.update();
+      let lctData = logsChangesByTable(logs);
+      logsChangesByTableChart.data.labels = lctData.labels;
+      logsChangesByTableChart.data.datasets[0].data = lctData.values;
+      setChartColors(logsChangesByTableChart, null);
+      logsChangesByTableChart.update();
+      let lhmData = logsUserTypeMatrix(logs);
+      logsUserTypeHeatmapChart.data.datasets[0].data = lhmData.data;
+      logsUserTypeHeatmapChart.options.scales.x.ticks.callback = value => lhmData.users[value];
+      logsUserTypeHeatmapChart.options.scales.y.ticks.callback = value => lhmData.types[value];
+      logsUserTypeHeatmapChart.update();
       let aData = assignedToData(data);
       assignedToChart.data.labels = aData.labels;
       assignedToChart.data.datasets[0].data = aData.values;
@@ -892,7 +1005,8 @@
           highPriorityChart, overdueChart, parentUnitChart,
           dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
           rfnpChart, subRfnpChart, ub04CorrespondenceChart, adminChart,
-          table;
+          logsEditsByUserChart, logsNewVsEditChart, logsChangesByTableChart,
+          logsUserTypeHeatmapChart, table;
     $(function() {
       initChartDropdown();
       feather.replace();
@@ -1300,6 +1414,106 @@
         }
       });
         adminChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
+
+        let logs = extractLogsFromData(rawData);
+
+        let leuData = logsEditsByUser(logs);
+        logsEditsByUserChart = new Chart($("#logsEditsByUserChart"), {
+          type: 'bar',
+          data: {
+            labels: leuData.labels,
+            datasets: [{
+              label: '# Edits',
+              data: leuData.values,
+              backgroundColor: 'rgba(0, 123, 255, 0.6)'
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+        logsEditsByUserChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
+        setChartColors(logsEditsByUserChart, null);
+
+        let lneData = logsNewVsEditByDay(logs);
+        logsNewVsEditChart = new Chart($("#logsNewVsEditChart"), {
+          type: 'line',
+          data: {
+            labels: lneData.labels,
+            datasets: [
+              {
+                label: 'New',
+                data: lneData.newValues,
+                fill: false,
+                borderColor: 'rgba(40, 167, 69, 0.7)',
+                backgroundColor: 'rgba(40, 167, 69, 0.7)'
+              },
+              {
+                label: 'Edit',
+                data: lneData.editValues,
+                fill: false,
+                borderColor: 'rgba(220, 53, 69, 0.7)',
+                backgroundColor: 'rgba(220, 53, 69, 0.7)'
+              }
+            ]
+          },
+          options: {
+            plugins: { legend: { display: true } },
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+        logsNewVsEditChart.data.datasets[0].baseColor = 'rgba(40, 167, 69, 0.7)';
+        logsNewVsEditChart.data.datasets[1].baseColor = 'rgba(220, 53, 69, 0.7)';
+
+        let lctData = logsChangesByTable(logs);
+        logsChangesByTableChart = new Chart($("#logsChangesByTableChart"), {
+          type: 'bar',
+          data: {
+            labels: lctData.labels,
+            datasets: [{
+              label: '# Logs',
+              data: lctData.values,
+              backgroundColor: 'rgba(255, 193, 7, 0.6)'
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+        logsChangesByTableChart.data.datasets[0].baseColor = 'rgba(255, 193, 7, 0.6)';
+        setChartColors(logsChangesByTableChart, null);
+
+        let lhmData = logsUserTypeMatrix(logs);
+        logsUserTypeHeatmapChart = new Chart($("#logsUserTypeHeatmapChart"), {
+          type: 'bubble',
+          data: {
+            datasets: [{
+              label: 'Logs',
+              data: lhmData.data,
+              backgroundColor: 'rgba(0, 123, 255, 0.6)'
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            responsive: true,
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: { callback: value => lhmData.users[value] }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { callback: value => lhmData.types[value] }
+              }
+            }
+          }
+        });
+        logsUserTypeHeatmapChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
 
         renderTable(rawData);
       table = $('#data-table table').DataTable({
