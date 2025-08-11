@@ -125,6 +125,11 @@
       color: #007bff;
       font-weight: 500;
     }
+    #chartOptions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
     .right-panel-toggle {
       position: fixed;
       top: 50%;
@@ -290,6 +295,30 @@
           </details>
 
           <details>
+
+            <summary>Performance</summary>
+            <div class="charts-grid">
+              <div class="chart-card" data-chart="assignedTo" title="Tracks how queues are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
+                <div class="chart-title">Assigned To Distribution</div>
+                <canvas id="assignedToChart"></canvas>
+              </div>
+              <div class="chart-card" data-chart="admin" title="Reflects ownership of queues at the admin level. If a queue is assigned to an Admin, they are expected to be the primary driver of resolution, while the AssignedTo (biller) acts in a supporting role.">
+                <div class="chart-title">Admin Distribution</div>
+                <canvas id="adminChart"></canvas>
+              </div>
+              <div class="chart-card" data-chart="highPriority" title="Isolates and visualizes Queues marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
+                <div class="chart-title">High Priority Queues</div>
+                <canvas id="highPriorityChart"></canvas>
+              </div>
+              <div class="chart-card" data-chart="overdue" title="Flags Queues where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
+                <div class="chart-title">Overdue Queues</div>
+                <canvas id="overdueChart"></canvas>
+              </div>
+            </div>
+          </details>
+
+          <details>
+
             <summary>Documentation</summary>
             <div class="charts-grid">
               <div class="chart-card" data-chart="ub04Correspondence" title="Counts Queues with UB04 or Correspondence flags for quick tracking of documentation statuses.">
@@ -870,10 +899,12 @@
           save();
         });
         const label = document.createElement('label');
+
         label.appendChild(cb);
         label.appendChild(document.createTextNode(' ' + title));
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
+
         card.style.display = cb.checked ? '' : 'none';
       });
       function save() {
