@@ -226,36 +226,41 @@
         <li class="nav-item"><a class="nav-link" href="#tab-activity">Activity Logs</a></li>
       </ul>
 
+      <details id="chartDropdown" style="margin:10px 0;">
+        <summary>Show/Hide Charts</summary>
+        <div id="chartOptions"></div>
+      </details>
+
       <div class="tab-content">
         <div id="tab-overview" class="tab-pane active">
           <details open>
             <summary>Queue Overview</summary>
             <div class="charts-grid">
-              <div class="chart-card" title="Visualizes the distribution of queues across different care units (e.g., Home Health, Hospice). Helps identify where queue volume is concentrated at the organizational level.">
+              <div class="chart-card" data-chart="parentUnit" title="Visualizes the distribution of queues across different care units (e.g., Home Health, Hospice). Helps identify where queue volume is concentrated at the organizational level.">
                 <div class="chart-title">Queues by Parent Unit</div>
                 <canvas id="parentUnitChart"></canvas>
               </div>
-              <div class="chart-card" title="Shows the current processing status of Queues (e.g., Billed, Denied, RFNP). Useful for quickly understanding bottlenecks and queue stages.">
+              <div class="chart-card" data-chart="status" title="Shows the current processing status of Queues (e.g., Billed, Denied, RFNP). Useful for quickly understanding bottlenecks and queue stages.">
                 <div class="chart-title">Status Breakdown</div>
                 <canvas id="statusChart"></canvas>
               </div>
-              <div class="chart-card" title="Displays Queue counts segmented by priority levels (e.g., Low, Medium, High). Useful for assessing urgency and workload severity across the team.">
+              <div class="chart-card" data-chart="priority" title="Displays Queue counts segmented by priority levels (e.g., Low, Medium, High). Useful for assessing urgency and workload severity across the team.">
                 <div class="chart-title">Priority Trend</div>
                 <canvas id="priorityChart"></canvas>
               </div>
-              <div class="chart-card" title="Breaks down volume by insurance payor (e.g., Medicare PPS, Kaiser, UHC). Useful for identifying key payors and monitoring high-volume relationships.">
+              <div class="chart-card" data-chart="payor" title="Breaks down volume by insurance payor (e.g., Medicare PPS, Kaiser, UHC). Useful for identifying key payors and monitoring high-volume relationships.">
                 <div class="chart-title">Queues by Payor</div>
                 <canvas id="payorChart"></canvas>
               </div>
-              <div class="chart-card" title="Categorizes Queues by how long they’ve been in the queue, based on the number of days since QueueDate. Supports aging reports and time-to-resolution improvement.">
+              <div class="chart-card" data-chart="queueAging" title="Categorizes Queues by how long they’ve been in the queue, based on the number of days since QueueDate. Supports aging reports and time-to-resolution improvement.">
                 <div class="chart-title">Queue Aging</div>
                 <canvas id="queueAgingChart"></canvas>
               </div>
-              <div class="chart-card" title="Highlights why Queues were returned or unpaid. Essential for RCM teams to spot recurring issues and reduce denials.">
+              <div class="chart-card" data-chart="rfnp" title="Highlights why Queues were returned or unpaid. Essential for RCM teams to spot recurring issues and reduce denials.">
                 <div class="chart-title">RFNP Breakdown</div>
                 <canvas id="rfnpChart"></canvas>
               </div>
-              <div class="chart-card" title="Provides deeper insight into subcategories of non-payment causes. Helps prioritize training, process fixes, or payor escalation strategies.">
+              <div class="chart-card" data-chart="subRfnp" title="Provides deeper insight into subcategories of non-payment causes. Helps prioritize training, process fixes, or payor escalation strategies.">
                 <div class="chart-title">subRFNP Breakdown</div>
                 <canvas id="subRfnpChart"></canvas>
               </div>
@@ -265,19 +270,19 @@
           <details>
             <summary>Performance</summary>
             <div class="charts-grid">
-              <div class="chart-card" title="Tracks how queues are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
+              <div class="chart-card" data-chart="assignedTo" title="Tracks how queues are distributed across individual billers. Useful for managing productivity and ensuring balanced workload for team members actively resolving queues.">
                 <div class="chart-title">Assigned To Distribution</div>
                 <canvas id="assignedToChart"></canvas>
               </div>
-              <div class="chart-card" title="Reflects ownership of queues at the admin level. If a queue is assigned to an Admin, they are expected to be the primary driver of resolution, while the AssignedTo (biller) acts in a supporting role.">
+              <div class="chart-card" data-chart="admin" title="Reflects ownership of queues at the admin level. If a queue is assigned to an Admin, they are expected to be the primary driver of resolution, while the AssignedTo (biller) acts in a supporting role.">
                 <div class="chart-title">Admin Distribution</div>
                 <canvas id="adminChart"></canvas>
               </div>
-              <div class="chart-card" title="Isolates and visualizes Queues marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
+              <div class="chart-card" data-chart="highPriority" title="Isolates and visualizes Queues marked as ‘High’ priority. Allows quick intervention in time-sensitive cases. Also represented numerically in #highPriorityCount.">
                 <div class="chart-title">High Priority Queues</div>
                 <canvas id="highPriorityChart"></canvas>
               </div>
-              <div class="chart-card" title="Flags Queues where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
+              <div class="chart-card" data-chart="overdue" title="Flags Queues where DueDate < Today. Indicates missed timelines and potential revenue delays. Also summarized in #overdueCount.">
                 <div class="chart-title">Overdue Queues</div>
                 <canvas id="overdueChart"></canvas>
               </div>
@@ -287,7 +292,7 @@
           <details>
             <summary>Documentation</summary>
             <div class="charts-grid">
-              <div class="chart-card" title="Counts Queues with UB04 or Correspondence flags for quick tracking of documentation statuses.">
+              <div class="chart-card" data-chart="ub04Correspondence" title="Counts Queues with UB04 or Correspondence flags for quick tracking of documentation statuses.">
                 <div class="chart-title">UB04 &amp; Correspondence</div>
                 <canvas id="ub04CorrespondenceChart"></canvas>
               </div>
@@ -297,11 +302,11 @@
 
         <div id="tab-trends" class="tab-pane">
           <div class="charts-grid">
-            <div class="chart-card" title="Displays weekly trends in upcoming Queue due dates. Useful for forecasting workload and aligning team capacity to demand.">
+            <div class="chart-card" data-chart="dueDateTrend" title="Displays weekly trends in upcoming Queue due dates. Useful for forecasting workload and aligning team capacity to demand.">
               <div class="chart-title">Due Date Trend</div>
               <canvas id="dueDateTrendChart"></canvas>
             </div>
-            <div class="chart-card" title="Segments Queues due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
+            <div class="chart-card" data-chart="dueDateThisWeek" title="Segments Queues due in the current calendar week by weekday. Helps prioritize daily workflow for short-term execution.">
               <div class="chart-title">Queues Due This Week</div>
               <canvas id="dueDateThisWeekChart"></canvas>
             </div>
@@ -849,12 +854,44 @@
       renderTable(data);
     }
 
+    function initChartDropdown() {
+      const container = document.getElementById('chartOptions');
+      const cards = document.querySelectorAll('.chart-card[data-chart]');
+      const hidden = JSON.parse(localStorage.getItem('hiddenCharts') || '[]');
+      cards.forEach(card => {
+        const id = card.dataset.chart;
+        const title = card.querySelector('.chart-title').textContent.trim();
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = id;
+        cb.checked = !hidden.includes(id);
+        cb.addEventListener('change', () => {
+          card.style.display = cb.checked ? '' : 'none';
+          save();
+        });
+        const label = document.createElement('label');
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(' ' + title));
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+        card.style.display = cb.checked ? '' : 'none';
+      });
+      function save() {
+        const hidden = [];
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          if (!cb.checked) hidden.push(cb.value);
+        });
+        localStorage.setItem('hiddenCharts', JSON.stringify(hidden));
+      }
+    }
+
       let assignedToChart, statusChart, priorityChart, payorChart,
           highPriorityChart, overdueChart, parentUnitChart,
           dueDateTrendChart, dueDateThisWeekChart, queueAgingChart,
           rfnpChart, subRfnpChart, ub04CorrespondenceChart, adminChart,
           table;
     $(function() {
+      initChartDropdown();
       feather.replace();
       let aData = assignedToData(rawData);
       assignedToChart = new Chart($("#assignedToChart"), {
