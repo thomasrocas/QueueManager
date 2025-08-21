@@ -208,6 +208,40 @@
     }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .modal-content {
+      background: #fff;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .modal-content .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    body.modal-open {
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -374,6 +408,13 @@
     </details>
   </div>
 
+  <div id="assignedToModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <button class="close-btn" onclick="closeAssignedToModal()" aria-label="Close">&times;</button>
+      <div id="assignedToModalContent"></div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const tabLinks = document.querySelectorAll('#dashboardTabs .nav-link');
@@ -463,6 +504,34 @@
         const url =
           'fmp://$/QueueManager?script=OpenCallLog&param=' + encodeURIComponent(param);
         window.location.href = url;
+      }
+    }
+
+    let previousFocus;
+    function openAssignedToModal() {
+      const modal = document.getElementById('assignedToModal');
+      const content = document.getElementById('assignedToModalContent');
+      const data = assignedToData(filterData());
+      let html = '<table><tr><th>Assigned To</th><th>Count</th></tr>';
+      data.labels.forEach((label, i) => {
+        html += `<tr><td>${label}</td><td>${data.values[i]}</td></tr>`;
+      });
+      html += '</table>';
+      content.innerHTML = html;
+      previousFocus = document.activeElement;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      content.focus();
+    }
+
+    function closeAssignedToModal() {
+      const modal = document.getElementById('assignedToModal');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      if (previousFocus) {
+        previousFocus.focus();
       }
     }
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
@@ -1631,8 +1700,12 @@
         });
 
       $('.chart-card, .chart-card canvas').on('dblclick', function(e) {
-        const card = $(this).closest('.chart-card')[0];
-        zoomChart(card);
+        const card = $(this).closest('.chart-card');
+        if (card.data('chart') === 'assignedTo') {
+          openAssignedToModal();
+        } else {
+          zoomChart(card[0]);
+        }
       });
 
 
