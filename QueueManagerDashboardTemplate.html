@@ -578,12 +578,32 @@
       }
     }
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
-    const rawData = [
+const rawData = [
  {"Admin":"","AssignedTo":"Ann Miranda","Call Log":"","ClaimID":"110702_76973_250721250724","Correspondence":"","DueDate":"8/18/2025","Event Date":"7/21/2025 - 7/24/2025","MRN":"11045645702","Parent Unit":"Home Health","Patient":"Leushtrng, Vinchrtent","Payor Name":"HPSM Care Advantage","Priority":"Low","QueueDate":"8/8/2025 4:59:30 PM","QueueID":"4E3BEEA3-AC1D-484F-A848-F1B2DDFCC592","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"annmiranda@anxlife.com"}]},"SourceTable":"BilledAR","Status":"Billed","UB04":"","subRFNP":""},
 {"Admin":"","AssignedTo":"Ann Miranda","Call Log":"","ClaimID":"104604_76947_250730250730","Correspondence":"","DueDate":"8/18/2025","Event Date":"7/30/2025 - 7/30/2025","MRN":"1044565604","Parent Unit":"Home Health","Patient":"Cashstrtro, Yadthira","Payor Name":"HPSM Care Advantage","Priority":"Low","QueueDate":"8/8/2025 4:59:30 PM","QueueID":"B60BB9EA-A226-4944-892C-F9476C0D951F","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"annmiranda@anxlife.com"}]},"SourceTable":"BilledAR","Status":"Billed","UB04":"","subRFNP":""},
 {"Admin":"","AssignedTo":"Johann Castaneda","Call Log":"","ClaimID":"400452_250625","Correspondence":"","DueDate":"8/22/2025","Event Date":"6/29/2025","MRN":"4004565452","Parent Unit":"Hospice","Patient":"T, Curghc B.","Payor Name":"SCFHP Room and Board","Priority":"Low","QueueDate":"8/8/2025 5:23:50 PM","QueueID":"FB4E556A-9407-C048-AC6E-E5A2E45E9DAE","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"johanncastaneda@anxlife.com"}]},"SourceTable":"Claims","Status":"Sequential Billing","UB04":"","subRFNP":""}
 ];
     let currentFilter = {};
+
+    function getFilterKey() {
+      const user = window.currentUserEmail || window.userEmail || '';
+      return `filters_${user}`;
+    }
+
+    function saveFilters() {
+      localStorage.setItem(getFilterKey(), JSON.stringify(currentFilter));
+    }
+
+    function loadFilters() {
+      const saved = localStorage.getItem(getFilterKey());
+      if (saved) {
+        try {
+          currentFilter = JSON.parse(saved);
+        } catch (e) {
+          currentFilter = {};
+        }
+      }
+    }
 
     function toggleFilter(field, value) {
       if(currentFilter[field] === value) {
@@ -591,10 +611,12 @@
       } else {
         currentFilter[field] = value;
       }
+      saveFilters();
     }
 
     function clearAllFilters() {
       currentFilter = {};
+      localStorage.removeItem(getFilterKey());
       updateAllCharts();
     }
 
@@ -1016,6 +1038,7 @@
       return data;
     }
     function updateAllCharts() {
+      if (!assignedToChart) return;
       let data = filterData();
       let logs = extractLogsFromData(data);
       let leuData = logsEditsByUser(logs);
@@ -1180,6 +1203,8 @@
           logsEditsByUserChart, logsNewVsEditChart, logsChangesByTableChart,
           logsUserTypeHeatmapChart, table;
     $(function() {
+      loadFilters();
+      updateAllCharts();
       initChartDropdown();
       feather.replace();
       let aData = assignedToData(rawData);
@@ -1318,6 +1343,7 @@
                 currentFilter.AssignedTo = val;
                 currentFilter.Priority = 'High';
               }
+              saveFilters();
             }
             updateAllCharts();
           },
@@ -1757,10 +1783,10 @@
         }
       });
 
-
-        feather.replace();
-        applyZoom();
-      });
+      updateAllCharts();
+      feather.replace();
+      applyZoom();
+    });
   </script>
 </body>
 </html>
