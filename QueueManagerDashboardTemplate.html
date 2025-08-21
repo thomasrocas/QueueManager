@@ -532,6 +532,13 @@
           }]
         },
         options: {
+          onClick: function(e, items) {
+            if(items.length) {
+              const label = this.data.labels[items[0].index];
+              toggleFilter('AssignedTo', label === "(Unassigned)" ? "" : label);
+            }
+            updateAllCharts();
+          },
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
