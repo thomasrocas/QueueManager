@@ -208,6 +208,40 @@
     }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .modal-content {
+      background: #fff;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .modal-content .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    body.modal-open {
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -374,6 +408,13 @@
     </details>
   </div>
 
+  <div id="assignedToModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <button class="close-btn" onclick="closeAssignedToModal()" aria-label="Close">&times;</button>
+      <div id="assignedToModalContent"></div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const tabLinks = document.querySelectorAll('#dashboardTabs .nav-link');
@@ -463,6 +504,60 @@
         const url =
           'fmp://$/QueueManager?script=OpenCallLog&param=' + encodeURIComponent(param);
         window.location.href = url;
+      }
+    }
+
+    let previousFocus, assignedToModalChart;
+    function openAssignedToModal() {
+      const modal = document.getElementById('assignedToModal');
+      const content = document.getElementById('assignedToModalContent');
+      const data = assignedToData(filterData());
+      content.innerHTML = '<canvas id="assignedToModalCanvas"></canvas>';
+      content.style.width = '90vw';
+      content.style.height = '80vh';
+      const canvas = document.getElementById('assignedToModalCanvas');
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      const ctx = canvas.getContext('2d');
+      assignedToModalChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: '# Claims',
+            data: data.values,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { autoSkip: false } },
+            y: { beginAtZero: true }
+          }
+        }
+      });
+      previousFocus = document.activeElement;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      content.tabIndex = -1;
+      content.focus();
+    }
+
+    function closeAssignedToModal() {
+      const modal = document.getElementById('assignedToModal');
+      if (assignedToModalChart) {
+        assignedToModalChart.destroy();
+        assignedToModalChart = null;
+      }
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      if (previousFocus) {
+        previousFocus.focus();
       }
     }
     // ---- SAMPLE DATA (Replace with your actual JSON!) ----
@@ -1631,8 +1726,12 @@
         });
 
       $('.chart-card, .chart-card canvas').on('dblclick', function(e) {
-        const card = $(this).closest('.chart-card')[0];
-        zoomChart(card);
+        const card = $(this).closest('.chart-card');
+        if (card.data('chart') === 'assignedTo') {
+          openAssignedToModal();
+        } else {
+          zoomChart(card[0]);
+        }
       });
 
 
