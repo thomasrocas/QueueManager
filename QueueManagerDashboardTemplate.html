@@ -1045,6 +1045,12 @@
       assignedToChart.data.datasets[0].data = aData.values;
       setChartColors(assignedToChart, 'AssignedTo');
       assignedToChart.update();
+      if (assignedToModalChart) {
+        assignedToModalChart.data.labels = aData.labels;
+        assignedToModalChart.data.datasets[0].data = aData.values;
+        setChartColors(assignedToModalChart, 'AssignedTo');
+        assignedToModalChart.update();
+      }
       let sData = statusData(data);
       statusChart.data.labels = sData.labels;
       statusChart.data.datasets[0].data = sData.values;
