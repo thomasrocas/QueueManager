@@ -549,6 +549,9 @@
         }
       });
 
+      assignedToModalChart.data.datasets[0].baseColor = 'rgba(0, 123, 255, 0.6)';
+      setChartColors(assignedToModalChart, 'AssignedTo');
+
       previousFocus = document.activeElement;
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
