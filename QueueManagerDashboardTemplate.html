@@ -508,10 +508,12 @@
     }
 
     let previousFocus, assignedToModalChart;
+
     function openAssignedToModal() {
       const modal = document.getElementById('assignedToModal');
       const content = document.getElementById('assignedToModalContent');
       const data = assignedToData(filterData());
+
       content.innerHTML = '<canvas id="assignedToModalCanvas"></canvas>';
       content.style.width = '90vw';
       content.style.height = '80vh';
@@ -539,20 +541,25 @@
           }
         }
       });
+
       previousFocus = document.activeElement;
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
+
       content.tabIndex = -1;
+
       content.focus();
     }
 
     function closeAssignedToModal() {
       const modal = document.getElementById('assignedToModal');
+
       if (assignedToModalChart) {
         assignedToModalChart.destroy();
         assignedToModalChart = null;
       }
+
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
