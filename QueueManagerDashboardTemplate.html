@@ -507,26 +507,59 @@
       }
     }
 
-    let previousFocus;
+    let previousFocus, assignedToModalChart;
+
     function openAssignedToModal() {
       const modal = document.getElementById('assignedToModal');
       const content = document.getElementById('assignedToModalContent');
       const data = assignedToData(filterData());
-      let html = '<table><tr><th>Assigned To</th><th>Count</th></tr>';
-      data.labels.forEach((label, i) => {
-        html += `<tr><td>${label}</td><td>${data.values[i]}</td></tr>`;
+
+      content.innerHTML = '<canvas id="assignedToModalCanvas"></canvas>';
+      content.style.width = '90vw';
+      content.style.height = '80vh';
+      const canvas = document.getElementById('assignedToModalCanvas');
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      const ctx = canvas.getContext('2d');
+      assignedToModalChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: '# Claims',
+            data: data.values,
+            backgroundColor: 'rgba(0, 123, 255, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { autoSkip: false } },
+            y: { beginAtZero: true }
+          }
+        }
       });
-      html += '</table>';
-      content.innerHTML = html;
+
       previousFocus = document.activeElement;
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
+
+      content.tabIndex = -1;
+
       content.focus();
     }
 
     function closeAssignedToModal() {
       const modal = document.getElementById('assignedToModal');
+
+      if (assignedToModalChart) {
+        assignedToModalChart.destroy();
+        assignedToModalChart = null;
+      }
+
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
