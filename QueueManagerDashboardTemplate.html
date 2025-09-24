@@ -824,6 +824,7 @@ let rawData = [
       });
     }
 
+
     function includesText(target, query) {
       if (target === undefined || target === null) return false;
       if (query === undefined || query === null) return false;
@@ -839,6 +840,7 @@ let rawData = [
         return filterValue.some(val => includesText(label, val));
       }
       return includesText(label, filterValue);
+
     }
 
     function parseISODate(str) {
@@ -1372,9 +1374,11 @@ let rawData = [
           } else {
             const recordValue = d[field] || '';
             if (Array.isArray(value)) {
+
               return value.some(val => includesText(recordValue, val));
             }
             return includesText(recordValue, value);
+
           }
         });
       });
