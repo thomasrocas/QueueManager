@@ -824,12 +824,23 @@ let rawData = [
       });
     }
 
+
+    function includesText(target, query) {
+      if (target === undefined || target === null) return false;
+      if (query === undefined || query === null) return false;
+      const haystack = String(target).toLowerCase();
+      const needle = String(query).toLowerCase();
+      if (!needle.trim()) return false;
+      return haystack.includes(needle);
+    }
+
     function matchesFilterValue(filterValue, label) {
       if (filterValue === undefined) return false;
       if (Array.isArray(filterValue)) {
-        return filterValue.includes(label);
+        return filterValue.some(val => includesText(label, val));
       }
-      return filterValue === label;
+      return includesText(label, filterValue);
+
     }
 
     function parseISODate(str) {
@@ -1363,9 +1374,11 @@ let rawData = [
           } else {
             const recordValue = d[field] || '';
             if (Array.isArray(value)) {
-              return value.includes(recordValue);
+
+              return value.some(val => includesText(recordValue, val));
             }
-            return recordValue === value;
+            return includesText(recordValue, value);
+
           }
         });
       });
