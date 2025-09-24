@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" />
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -14,6 +15,7 @@
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; }
     .sidebar {
@@ -153,7 +155,7 @@
       position: fixed;
       top: 0;
       right: -400px;
-      width: 250px;
+      width: 320px;
       height: 100%;
       background: white;
       box-shadow: -2px 0 10px rgba(0,0,0,0.1);
@@ -187,6 +189,74 @@
       margin-left: 4px;
     }
     .call-log-btn:hover { background: #1e7e34; }
+    .filter-section {
+      border-top: 1px solid #e6e6e6;
+      margin-top: 16px;
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .filter-group .filter-label {
+      color: #0056b3;
+      font-size: 0.95em;
+      margin-bottom: 0;
+    }
+    .date-range-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .date-range-row span {
+      color: #6c757d;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+    .date-range-row input[type="date"] {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      font-size: 0.9em;
+    }
+    .date-filter-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .date-filter-actions button {
+      flex: 1;
+      padding: 6px 0;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    .date-filter-actions .apply-btn {
+      background: #0d6efd;
+      color: #fff;
+    }
+    .date-filter-actions .clear-btn {
+      background: #f8f9fa;
+      color: #0d6efd;
+      border-color: #cfe2ff;
+    }
+    .tagify {
+      border-radius: 6px;
+      border-color: #d0d7de;
+      font-size: 0.9em;
+    }
+    .tagify__tag {
+      background: #e7f1ff;
+      color: #0d6efd;
+    }
+    .tagify__input {
+      min-width: 80px;
+    }
     /* Tab navigation styles */
     .nav-tabs {
       border-bottom: 1px solid #dee2e6;
@@ -406,6 +476,56 @@
       <summary>Show/Hide Charts</summary>
       <div id="chartOptions"></div>
     </details>
+    <div class="filter-section">
+      <div class="filter-group">
+        <div class="filter-label">Event Date</div>
+        <div class="date-range-row">
+          <input type="date" id="eventDateStart" aria-label="Event date start">
+          <span>to</span>
+          <input type="date" id="eventDateEnd" aria-label="Event date end">
+        </div>
+        <div class="date-filter-actions">
+          <button type="button" class="apply-btn" onclick="applyDateFilter()">Apply</button>
+          <button type="button" class="clear-btn" onclick="clearDateFilter()">Clear</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterAssignedTo">Assigned To</label>
+        <input id="filterAssignedTo" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterAdmin">Assigned Admin</label>
+        <input id="filterAdmin" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterPatient">Patient</label>
+        <input id="filterPatient" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterPayor">Payor Name</label>
+        <input id="filterPayor" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterParentUnit">Parent Unit</label>
+        <input id="filterParentUnit" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterStatus">Status</label>
+        <input id="filterStatus" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterSourceTable">Source Table</label>
+        <input id="filterSourceTable" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterPriority">Priority</label>
+        <input id="filterPriority" placeholder="Search and select" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filterRfnp">RFNP</label>
+        <input id="filterRfnp" placeholder="Search and select" />
+      </div>
+    </div>
   </div>
 
   <div id="assignedToModal" class="modal-overlay" aria-hidden="true">
@@ -584,6 +704,30 @@ let rawData = [
 {"Admin":"","AssignedTo":"Johann Castaneda","Call Log":"","ClaimID":"400452_250625","Correspondence":"","DueDate":"8/22/2025","Event Date":"6/29/2025","MRN":"4004565452","Parent Unit":"Hospice","Patient":"T, Curghc B.","Payor Name":"SCFHP Room and Board","Priority":"Low","QueueDate":"8/8/2025 5:23:50 PM","QueueID":"FB4E556A-9407-C048-AC6E-E5A2E45E9DAE","RFNP":"","Related":{"LOG":[{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"Edit","User":"johanncastaneda@anxlife.com"},{"Date":"8/8/2025","Table":"Queue","Type":"New","User":"johanncastaneda@anxlife.com"}]},"SourceTable":"Claims","Status":"Sequential Billing","UB04":"","subRFNP":""}
 ];
     let currentFilter = {};
+    const multiValueFields = new Set([
+      'AssignedTo',
+      'Admin',
+      'Patient',
+      'Payor Name',
+      'Parent Unit',
+      'Status',
+      'SourceTable',
+      'Priority',
+      'RFNP'
+    ]);
+    const tagifyFieldConfig = [
+      { field: 'AssignedTo', selector: '#filterAssignedTo' },
+      { field: 'Admin', selector: '#filterAdmin' },
+      { field: 'Patient', selector: '#filterPatient' },
+      { field: 'Payor Name', selector: '#filterPayor' },
+      { field: 'Parent Unit', selector: '#filterParentUnit' },
+      { field: 'Status', selector: '#filterStatus' },
+      { field: 'SourceTable', selector: '#filterSourceTable' },
+      { field: 'Priority', selector: '#filterPriority' },
+      { field: 'RFNP', selector: '#filterRfnp' }
+    ];
+    const tagifyInstances = {};
+    let suppressFilterUpdate = false;
 
     function getFilterKey() {
       const user = window.currentUserEmail || window.userEmail || '';
@@ -606,10 +750,31 @@ let rawData = [
     }
 
     function toggleFilter(field, value) {
-      if(currentFilter[field] === value) {
-        delete currentFilter[field];
+      if (multiValueFields.has(field)) {
+        let values = [];
+        if (Array.isArray(currentFilter[field])) {
+          values = [...currentFilter[field]];
+        } else if (currentFilter[field] !== undefined) {
+          values = [currentFilter[field]];
+        }
+        const idx = values.indexOf(value);
+        if (idx >= 0) {
+          values.splice(idx, 1);
+        } else {
+          values.push(value);
+        }
+        if (values.length) {
+          currentFilter[field] = values;
+        } else {
+          delete currentFilter[field];
+        }
+        syncFiltersToUI();
       } else {
-        currentFilter[field] = value;
+        if(currentFilter[field] === value) {
+          delete currentFilter[field];
+        } else {
+          currentFilter[field] = value;
+        }
       }
       saveFilters();
     }
@@ -617,6 +782,7 @@ let rawData = [
     function clearAllFilters() {
       currentFilter = {};
       localStorage.removeItem(getFilterKey());
+      syncFiltersToUI();
       updateAllCharts();
     }
 
@@ -626,7 +792,7 @@ let rawData = [
         chart.data.datasets.forEach(ds => {
           const base = ds.baseColor;
           ds.pointBackgroundColor = chart.data.labels.map((lbl, idx) => {
-            const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
+            const match = condition ? condition(lbl) : matchesFilterValue(currentFilter[field], lbl);
             if(match) return highlight;
             if(Array.isArray(base)) return base[idx % base.length];
             return base;
@@ -649,13 +815,137 @@ let rawData = [
       }
       const labels = chart.data.labels;
       ds.backgroundColor = labels.map((lbl, idx) => {
-        const match = condition ? condition(lbl) : (currentFilter[field] !== undefined && lbl === currentFilter[field]);
+        const match = condition ? condition(lbl) : matchesFilterValue(currentFilter[field], lbl);
         if(Array.isArray(base)) {
           const color = base[idx % base.length];
           return match ? highlight : color;
         }
         return match ? highlight : base;
       });
+    }
+
+    function matchesFilterValue(filterValue, label) {
+      if (filterValue === undefined) return false;
+      if (Array.isArray(filterValue)) {
+        return filterValue.includes(label);
+      }
+      return filterValue === label;
+    }
+
+    function parseISODate(str) {
+      if (!str) return null;
+      const [y, m, d] = str.split('-').map(n => parseInt(n, 10));
+      if ([y, m, d].some(isNaN)) return null;
+      return new Date(y, m - 1, d);
+    }
+
+    function applyDateFilter() {
+      const startInput = document.getElementById('eventDateStart');
+      const endInput = document.getElementById('eventDateEnd');
+      if (!startInput || !endInput) return;
+      const start = startInput.value;
+      const end = endInput.value;
+      let range = { start, end };
+      if (start && end && start > end) {
+        range = { start: end, end: start };
+      }
+      if (range.start || range.end) {
+        currentFilter.EventDateRange = range;
+        startInput.value = range.start || '';
+        endInput.value = range.end || '';
+      } else {
+        delete currentFilter.EventDateRange;
+      }
+      saveFilters();
+      updateAllCharts();
+    }
+
+    function clearDateFilter() {
+      const startInput = document.getElementById('eventDateStart');
+      const endInput = document.getElementById('eventDateEnd');
+      if (startInput) startInput.value = '';
+      if (endInput) endInput.value = '';
+      delete currentFilter.EventDateRange;
+      saveFilters();
+      updateAllCharts();
+    }
+
+    function getUniqueValues(field) {
+      const set = new Set();
+      rawData.forEach(rec => {
+        const val = rec[field];
+        if (Array.isArray(val)) {
+          val.forEach(v => {
+            if (v) set.add(v);
+          });
+        } else if (val !== undefined && val !== null && String(val).trim() !== '') {
+          set.add(String(val));
+        }
+      });
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    function initTagifyFilters() {
+      if (!window.Tagify) return;
+      tagifyFieldConfig.forEach(cfg => {
+        const input = document.querySelector(cfg.selector);
+        if (!input) return;
+        const values = getUniqueValues(cfg.field);
+        const tagify = new Tagify(input, {
+          whitelist: values,
+          enforceWhitelist: false,
+          dropdown: {
+            enabled: 0,
+            maxItems: 20,
+            fuzzySearch: true,
+            closeOnSelect: false
+          }
+        });
+        tagifyInstances[cfg.field] = tagify;
+        tagify.on('add', () => applyTagifyFilter(cfg.field));
+        tagify.on('remove', () => applyTagifyFilter(cfg.field));
+      });
+    }
+
+    function refreshTagifyFilters() {
+      Object.entries(tagifyInstances).forEach(([field, instance]) => {
+        const values = getUniqueValues(field);
+        instance.settings.whitelist = values;
+        instance.dropdown.hide();
+      });
+    }
+
+    function applyTagifyFilter(field) {
+      if (suppressFilterUpdate) return;
+      const instance = tagifyInstances[field];
+      if (!instance) return;
+      const selected = instance.value.map(tag => tag.value);
+      if (selected.length) {
+        currentFilter[field] = selected;
+      } else {
+        delete currentFilter[field];
+      }
+      saveFilters();
+      updateAllCharts();
+    }
+
+    function syncFiltersToUI() {
+      suppressFilterUpdate = true;
+      Object.entries(tagifyInstances).forEach(([field, instance]) => {
+        instance.removeAllTags();
+        const selected = currentFilter[field];
+        if (selected === undefined) return;
+        const values = (Array.isArray(selected) ? selected : [selected]).filter(v => String(v).trim() !== '');
+        if (values.length) {
+          instance.addTags(values);
+        }
+      });
+      const startInput = document.getElementById('eventDateStart');
+      const endInput = document.getElementById('eventDateEnd');
+      const range = currentFilter.EventDateRange || {};
+      if (startInput) startInput.value = range.start || '';
+      if (endInput) endInput.value = range.end || '';
+      suppressFilterUpdate = false;
     }
 
     function normalizeDate(str) {
@@ -1056,8 +1346,26 @@ let rawData = [
               const type = l.Type || '(Unknown)';
               return user + '|' + type === value;
             });
+          } else if (field === 'EventDateRange') {
+            const eventDateStr = normalizeDate(d['Event Date']);
+            if (!eventDateStr) return false;
+            const eventDate = parseISODate(eventDateStr);
+            if (!eventDate) return false;
+            if (value.start) {
+              const start = parseISODate(value.start);
+              if (start && eventDate < start) return false;
+            }
+            if (value.end) {
+              const end = parseISODate(value.end);
+              if (end && eventDate > end) return false;
+            }
+            return true;
           } else {
-            return (d[field] || '') === value;
+            const recordValue = d[field] || '';
+            if (Array.isArray(value)) {
+              return value.includes(recordValue);
+            }
+            return recordValue === value;
           }
         });
       });
@@ -1129,7 +1437,7 @@ let rawData = [
       highPriorityChart.data.labels = hpData.labels;
       highPriorityChart.data.datasets[0].data = hpData.values.map((v, i) => ({ x: i, y: v, r: Math.max(5, v * 3) }));
       highPriorityChart.options.scales.x.ticks.callback = function(value) { return hpData.labels[value]; };
-      setChartColors(highPriorityChart, 'AssignedTo', label => currentFilter.Priority === 'High' && currentFilter.AssignedTo === label);
+      setChartColors(highPriorityChart, 'AssignedTo', label => currentFilter.Priority === 'High' && matchesFilterValue(currentFilter.AssignedTo, label));
       highPriorityChart.update();
       let odData = overdueVsDueThisWeek(data);
       overdueChart.data.labels = odData.labels;
@@ -1197,6 +1505,8 @@ let rawData = [
         console.error("Invalid JSON passed to reloadData:", e);
         return;
       }
+      refreshTagifyFilters();
+      syncFiltersToUI();
       renderTable(rawData);
       updateAllCharts();
     }
@@ -1242,6 +1552,8 @@ let rawData = [
           logsUserTypeHeatmapChart, table;
     $(function() {
       loadFilters();
+      initTagifyFilters();
+      syncFiltersToUI();
       updateAllCharts();
       initChartDropdown();
       feather.replace();
@@ -1374,14 +1686,17 @@ let rawData = [
             if(items.length) {
               const label = hpData.labels[items[0].index];
               const val = label === "(Unassigned)" ? "" : label;
-              if(currentFilter.AssignedTo === val && currentFilter.Priority === 'High') {
+              const assignedFilter = currentFilter.AssignedTo;
+              const singleMatch = Array.isArray(assignedFilter) ? (assignedFilter.length === 1 && assignedFilter[0] === val) : assignedFilter === val;
+              if(currentFilter.Priority === 'High' && singleMatch) {
                 delete currentFilter.AssignedTo;
                 delete currentFilter.Priority;
               } else {
-                currentFilter.AssignedTo = val;
+                currentFilter.AssignedTo = [val];
                 currentFilter.Priority = 'High';
               }
               saveFilters();
+              syncFiltersToUI();
             }
             updateAllCharts();
           },
